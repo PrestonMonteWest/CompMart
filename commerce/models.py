@@ -3,50 +3,9 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.urls import reverse
 
-class Product(models.Model):
-    reviewers = models.ManyToManyField(User, through='Review', related_name='reviewed_products')
-    name = models.CharField(max_length=40)
-    price = models.DecimalField(max_digits=6, decimal_places=2)
-    description = models.TextField(max_length=1000, blank=True)
-    discontinued = models.BooleanField(default=False)
-    stock = models.PositiveSmallIntegerField()
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def in_stock(self):
-        return self.stock > 0
-
-    def get_absolute_url(self):
-        return reverse('commerce.views.details', args=(str(self.id),))
-
-class Image(models.Model):
+class AddressBase(models.Model):
     class Meta:
-        unique_together = (('product', 'image'),)
-
-    product = models.ForeignKey(Product, models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='product/%Y/%m/%d')
-
-    def __str__(self):
-        return self.image
-
-class Review(models.Model):
-    class Meta:
-        unique_together = (('product', 'user'),)
-
-    product = models.ForeignKey(Product, models.CASCADE, related_name='reviews')
-    user = models.ForeignKey(User, models.CASCADE, related_name='reviews')
-    title = models.CharField(max_length=30)
-    body = models.TextField('text body')
-    rating = models.PositiveSmallIntegerField()
-
-    def __str__(self):
-        return self.title
-
-class Address(models.Model):
-    class Meta:
-        unique_together = (('user', 'street', 'city', 'state'),)
+        abstract = True
 
     STATES = (
         ('AK', 'Alaska'),
@@ -108,11 +67,59 @@ class Address(models.Model):
         ('WY', 'Wyoming'),
     )
 
-    user = models.ForeignKey(User, models.CASCADE, related_name='addresses')
     street = models.CharField(max_length=60)
     city = models.CharField(max_length=20)
     state = models.CharField(max_length=2, choices=STATES)
     zip_code = models.CharField(max_length=5)
+
+class Product(models.Model):
+    reviewers = models.ManyToManyField(User, through='Review', related_name='reviewed_products')
+    name = models.CharField(max_length=40)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+    description = models.TextField(max_length=1000, blank=True)
+    discontinued = models.BooleanField(default=False)
+    stock = models.PositiveSmallIntegerField()
+    purchase_count = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def in_stock(self):
+        return self.stock > 0
+
+    def get_absolute_url(self):
+        return reverse('commerce.views.details', args=(str(self.id),))
+
+class Image(models.Model):
+    class Meta:
+        unique_together = (('product', 'image'),)
+
+    product = models.ForeignKey(Product, models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='product/%Y/%m/%d')
+
+    def __str__(self):
+        return self.image
+
+class Review(models.Model):
+    class Meta:
+        unique_together = (('product', 'user'),)
+
+    product = models.ForeignKey(Product, models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, models.CASCADE, related_name='reviews')
+    title = models.CharField(max_length=30)
+    body = models.TextField()
+    rating = models.PositiveSmallIntegerField()
+    pub_date = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return self.title
+
+class Address(AddressBase):
+    class Meta:
+        unique_together = (('user', 'street', 'city', 'state'),)
+
+    user = models.ForeignKey(User, models.CASCADE, related_name='addresses')
 
     def __str__(self):
         return '{}, {}, {} {}'.format(
@@ -132,7 +139,7 @@ class CreditCard(models.Model):
     holder_name = models.CharField(max_length=50)
     expiration_date = models.DateField()
 
-class Order(models.Model):
+class Order(AddressBase):
     class Meta:
         ordering = ('purchase_date',)
 
@@ -140,10 +147,6 @@ class Order(models.Model):
     user = models.ForeignKey(User, models.CASCADE, related_name='orders')
     total = models.DecimalField(max_digits=7, decimal_places=2)
     purchase_date = models.DateTimeField(default=timezone.now)
-    street = models.CharField(max_length=60)
-    city = models.CharField(max_length=20)
-    state = models.CharField(max_length=2)
-    zip_code = models.CharField(max_length=5)
 
     def __str__(self):
         return 'Order #{}'.format(self.id)
