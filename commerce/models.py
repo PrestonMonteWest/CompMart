@@ -89,7 +89,7 @@ class Product(models.Model):
         return self.stock > 0
 
     def get_absolute_url(self):
-        return reverse('commerce.views.details', args=(str(self.id),))
+        return reverse('commerce:product', args=(self.pk,))
 
 class Image(models.Model):
     class Meta:
@@ -122,7 +122,8 @@ class Address(AddressBase):
     user = models.ForeignKey(User, models.CASCADE, related_name='addresses')
 
     def __str__(self):
-        return '{}, {}, {} {}'.format(
+        return '{} at {}, {}, {} {}'.format(
+            self.user.username,
             self.street,
             self.city,
             self.state,
