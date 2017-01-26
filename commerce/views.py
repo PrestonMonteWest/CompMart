@@ -1,20 +1,20 @@
 from django.shortcuts import render
-from django.utils import timezone
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from .models import Product
+from datetime import datetime
 
 def index(request):
-    content = (
+    html = (
         '<!DOCTYPE html>'
         '<html>'
         '<body>'
         '<p>This is the CompMart index!</p>'
-        '<p>The time is {}.</p>'.format(timezone.now()) +
+        '<p>The time is {}.</p>'.format(datetime.now()) +
         '</body>'
         '</html>'
     )
 
-    return HttpResponse(content)
+    return HttpResponse(html)
 
 def product(request, pk='1'):
     content = ''
@@ -27,7 +27,7 @@ def product(request, pk='1'):
         return HttpResponse(content)
 
 def login(request):
-    return HttpResponse('login page')
+    raise Http404('Cannot login at this time')
 
 def logout(request):
-    return HttpResponse('logout page')
+    raise Http404('Cannot logout at this time')

@@ -18,5 +18,6 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^commerce/?', include('commerce.urls')),
+    url(r'^commerce-sell/?', include('commerce.urls', namespace='commerce-sell')),
     url(r'^admin/?', admin.site.urls),
 ]
