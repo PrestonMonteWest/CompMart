@@ -1,22 +1,20 @@
 from django.shortcuts import render
 from django.http import HttpResponse, Http404
-from .models import Product
+from django.views.decorators.http import require_safe
 from datetime import datetime
+from .models import Product
 
+@require_safe
 def index(request):
-    html = (
-        '<!DOCTYPE html>'
-        '<html>'
-        '<body>'
-        '<p>This is the CompMart index!</p>'
-        '<p>The time is {}.</p>'.format(datetime.now()) +
-        '</body>'
-        '</html>'
-    )
+    q = Product.objects.all()[:10]
+    context = {
+        'product_list': q,
+    }
 
-    return HttpResponse(html)
+    return render(request, 'commerce/index.html', context=context)
 
-def product(request, pk='1'):
+@require_safe
+def product(request, pk):
     content = ''
 
     try:
@@ -31,3 +29,6 @@ def login(request):
 
 def logout(request):
     raise Http404('Cannot logout at this time')
+
+def add(request, pk):
+    raise Http404('Cannot add product at this time.')

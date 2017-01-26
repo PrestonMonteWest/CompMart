@@ -1,0 +1,20 @@
+<body>
+  <main>
+    <article>
+      <h2>Welcome!</h2>
+      <div class="container">
+	{% for product in product_list %}
+	  <div class="product">
+	    <div class="image-box">
+	      <!-- <img alt="{{ product.name }}" src="{{ product.image }}"> -->
+	    </div>
+	    <p><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></p>
+	    <p>${{ product.price }}</p>
+	    <p>{{ product.rating }}</p>
+	    <a class="button" href="{% url 'commerce:add' product.id %}">Add</a>
+	  </div>
+	{% endfor %}
+      </div>
+    </article>
+  </main>
+</body>

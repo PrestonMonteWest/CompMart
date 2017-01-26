@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^product/(?P<pk>[1-9]\d*)/?$', views.product, name='product'),
     url(r'^login/?$', views.login, name='login'),
     url(r'^logout/?$', views.logout, name='logout'),
+    url(r'^add/(?P<pk>[1-9]\d*)/?$', views.add, name='add'),
 ]
