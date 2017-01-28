@@ -3,11 +3,11 @@ from . import views
 
 app_name = 'commerce'
 
-# trailing slash is optional to reduce redirection
 urlpatterns = [
-    url(r'^$', views.index, name='index'),
-    url(r'^product/(?P<pk>[1-9]\d*)/?$', views.product, name='product'),
-    url(r'^login/?$', views.login, name='login'),
-    url(r'^logout/?$', views.logout, name='logout'),
-    url(r'^add/(?P<pk>[1-9]\d*)/?$', views.add, name='add'),
+    url(r'^(?P<page>[1-9]\d*)?$', views.Index.as_view(), name='index'),
+    url(r'^product/(?P<pk>[1-9]\d*)/$', views.Details.as_view(), name='product'),
+    url(r'^login/$', views.login, name='login'),
+    url(r'^logout/$', views.logout, name='logout'),
+    url(r'^add/(?P<pk>[1-9]\d*)/$', views.add, name='add'),
+    url(r'^cart/$', views.cart, name='cart'),
 ]

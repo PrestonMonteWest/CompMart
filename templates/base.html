@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}{{ site_name }}{% endblock %}</title>
+    <meta name="author" content="{% block author %}Preston West{% endblock %}">
+    <meta name="description" content="This is a test site.">
+  </head>
+  <body>
+    <div>
+      <header role="banner">
+	<h1>{{ site_name }}</h1>
+	<nav>
+	  <ul>
+	    <li><a href="{% url 'commerce:index' %}">Home</a></li>
+	    <li><a href="{% url 'commerce:cart' %}">Cart</a></li>
+	    <li><a href="{% url 'admin:index' %}">Admin</a></li>
+	  </ul>
+	</nav>
+      </header>
+      {% block content %}{% endblock %}
+    </div>
+    <footer role="contentinfo">
+      <p class="copyright">{{ site_name }} &copy;</p>
+    </footer>
+  </body>
+</html>

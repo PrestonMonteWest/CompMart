@@ -89,7 +89,7 @@ class Product(models.Model):
         return self.stock > 0
 
     def get_absolute_url(self):
-        return reverse('commerce:product', args=(self.pk,))
+        return reverse('commerce:product', args=(self.id,))
 
 class Image(models.Model):
     class Meta:

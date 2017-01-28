@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<main>
+  <article>
+    <div id="product">
+      <div class="image-box">
+	<!-- <img alt="{{ product.name }}" src="{{ product.image }}"> -->
+      </div>
+      <div class="info">
+	<h2>{{ product.name }}</h2>
+	<p>${{ product.price }}</p>
+	<!-- <p>{{ product.rating }}</p> -->
+	<a class="button" href="{% url 'commerce:add' product.id %}">Add</a>
+      </div>
+      <p class="text">{{ product.description|default:"No Description" }}</p>
+    </div>
+  </article>
+</main>
+{% endblock %}
