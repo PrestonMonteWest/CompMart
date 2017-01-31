@@ -79,10 +79,20 @@ class Product(models.Model):
     description = models.TextField(max_length=1000, blank=True)
     discontinued = models.BooleanField(default=False)
     stock = models.PositiveSmallIntegerField()
-    purchase_count = models.PositiveIntegerField(default=0)
+    image = models.ImageField(upload_to='images/products')
 
     def __str__(self):
         return self.name
+
+    @property
+    def purchase_count(self):
+        from django.db.models import Sum
+        return self.orderitem_set.aggregate(Sum('quantity'))['quantity__sum']
+
+    @property
+    def rating(self):
+        from django.db.models import Avg
+        return self.reviews.aggregate(Avg('rating'))['rating__avg']
 
     @property
     def in_stock(self):
@@ -90,16 +100,6 @@ class Product(models.Model):
 
     def get_absolute_url(self):
         return reverse('commerce:product', args=(self.id,))
-
-class Image(models.Model):
-    class Meta:
-        unique_together = (('product', 'image'),)
-
-    product = models.ForeignKey(Product, models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='product/%Y/%m/%d')
-
-    def __str__(self):
-        return self.image
 
 class Review(models.Model):
     class Meta:
@@ -139,6 +139,9 @@ class CreditCard(models.Model):
     card_type = models.CharField(max_length=20)
     holder_name = models.CharField(max_length=50)
     expiration_date = models.DateField()
+
+    def __str__(self):
+        return '{}, {}'.format(self.card_type, self.holder_name)
 
 class Order(AddressBase):
     class Meta:

@@ -2,15 +2,16 @@ from django.shortcuts import render
 from django.http import HttpResponse, Http404
 from django.views.generic import ListView, DetailView
 from django.conf import settings
-from datetime import datetime
+from datetime import date
 from .models import Product
 
 class Index(ListView):
     template_name = 'commerce/index.html'
+    page_len = 12
 
     def get_queryset(self):
-        set_len = 10
-        num_products = Product.objects.count()
+        # for value reuse in context method
+        self.num_products = Product.objects.count()
 
         # kwargs always has page key
         page = self.kwargs['page']
@@ -19,27 +20,25 @@ class Index(ListView):
         else:
             page = 1
 
-        start = (page - 1) * set_len
-        if start >= num_products:
+        start = (page - 1) * Index.page_len
+        if start >= self.num_products:
             raise Http404()
 
-        return Product.objects.all()[start:start+set_len]
+        return Product.objects.all()[start:start+Index.page_len]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['site_name'] = settings.SITE_NAME
+        context['page'] = self.kwargs['page']
+
+        num_pages = (self.num_products // Index.page_len)
+        num_pages += (1 if self.num_products % Index.page_len != 0 else 0)
+        context['num_pages'] = num_pages
 
         return context
 
 class Details(DetailView):
     model = Product
     template_name = 'commerce/product.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['site_name'] = settings.SITE_NAME
-
-        return context
 
 def login(request):
     raise Http404('Cannot login at this time')

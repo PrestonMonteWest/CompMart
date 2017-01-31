@@ -1,10 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-us">
   <head>
     <meta charset="utf-8">
     <title>{% block title %}{{ site_name }}{% endblock %}</title>
     <meta name="author" content="{% block author %}Preston West{% endblock %}">
     <meta name="description" content="This is a test site.">
+    {% block style %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'commerce/css/layout.css' %}">
+    {% endblock %}
   </head>
   <body>
     <div>
@@ -21,7 +25,7 @@
       {% block content %}{% endblock %}
     </div>
     <footer role="contentinfo">
-      <p class="copyright">{{ site_name }} &copy;</p>
+      <p class="copyright">{{ site_name }} &copy; {{ year }}</p>
     </footer>
   </body>
 </html>
