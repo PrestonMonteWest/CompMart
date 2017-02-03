@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^logout/$', views.logout, name='logout'),
     url(r'^add/(?P<pk>[1-9]\d*)/$', views.add, name='add'),
     url(r'^cart/$', views.cart, name='cart'),
+    url(r'^register/$', views.register, name='register'),
 ]

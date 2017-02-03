@@ -5,10 +5,11 @@
     <title>{% block title %}{{ site_name }}{% endblock %}</title>
     <meta name="author" content="{% block author %}Preston West{% endblock %}">
     <meta name="description" content="This is a test site.">
-    {% block style %}
     {% load static %}
+    {% block style %}
     <link rel="stylesheet" href="{% static 'commerce/css/layout.css' %}">
     {% endblock %}
+    <link rel="icon" href="{% static 'images/cmicon.png' %}">
   </head>
   <body>
     <div>
@@ -18,7 +19,15 @@
 	  <ul>
 	    <li><a href="{% url 'commerce:index' %}">Home</a></li>
 	    <li><a href="{% url 'commerce:cart' %}">Cart</a></li>
-	    <li><a href="{% url 'admin:index' %}">Admin</a></li>
+	    {% if user.is_authenticated %}
+	      <li><a href="{% url 'commerce:logout' %}">Logout</a></li>
+	      {% if user.is_staff %}
+	        <li><a href="{% url 'admin:index' %}">Admin</a></li>
+	      {% endif %}
+	    {% else %}
+	      <li><a href="{% url 'commerce:login' %}">Login</a></li>
+	      <li><a href="{% url 'commerce:register' %}">Register</a></li>
+	    {% endif %}
 	  </ul>
 	</nav>
       </header>
