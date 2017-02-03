@@ -17,7 +17,7 @@
 	<h1>{{ site_name }}</h1>
 	<nav>
 	  <ul>
-	    <li><a href="{% url 'commerce:index' %}">Home</a></li>
+	    <li><a href="{% url 'index' %}">Home</a></li>
 	    <li><a href="{% url 'commerce:cart' %}">Cart</a></li>
 	    {% if user.is_authenticated %}
 	      <li><a href="{% url 'commerce:logout' %}">Logout</a></li>

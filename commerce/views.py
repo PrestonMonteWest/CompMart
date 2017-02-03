@@ -54,7 +54,7 @@ def login(request):
     user = authenticate(username=username, password=password)
     if user:
         auth_login(request, user)
-        return redirect(reverse('commerce:index'))
+        return redirect(reverse('index'))
     else:
         return render(request, template_name, context={
             'errors': (
@@ -65,8 +65,14 @@ def login(request):
 
 @require_safe
 def logout(request):
+    if 'cart' in request.session:
+        cart = request.session['cart']
+    else:
+        cart = {}
+
     auth_logout(request)
-    return redirect(reverse('commerce:index'))
+    request.session['cart'] = cart
+    return redirect(reverse('index'))
 
 @require_safe
 def add(request, pk):
@@ -75,12 +81,16 @@ def add(request, pk):
     except Product.DoesNotExist:
         raise Http404()
     else:
-        if pk in request.session:
-            request.session[pk] += 1
+        if 'cart' in request.session:
+            cart = request.session['cart']
+            if pk in cart:
+                cart[pk] += 1
+            else:
+                cart[pk] = 1
         else:
-            request.session[pk] = 1
+            request.session['cart'] = {pk: 1}
 
-        return redirect(reverse('commerce:index'))
+        return redirect(reverse('index'))
 
 @require_http_methods(['GET', 'POST'])
 def cart(request):
