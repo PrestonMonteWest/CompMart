@@ -1,0 +1,24 @@
+{% extends 'commerce/commerce.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% load static %}
+{% block styles %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'commerce/css/pages/product.css' %}">
+{% endblock %}
+
+{% block page_content %}
+<div id="product">
+  <div class="image-box">
+    <img alt="{{ product.name }}" src="{{ product.image.url }}">
+  </div>
+  <div class="info">
+    <h2>{{ product.name }}</h2>
+    <p>${{ product.price }}</p>
+    <p>{% if product.rating %}%{{ product.rating }}{% else %}<i>No Rating</i>{% endif %}</p>
+    <a class="button" href="{% url 'commerce:add' product.id %}">Add</a>
+  </div>
+  <p class="text">{{ product.description|default:"<i>No Description</i>" }}</p>
+</div>
+{% endblock %}

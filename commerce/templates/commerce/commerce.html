@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block styles %}
+{{ block.super }}
+{% load static %}
+<link rel="stylesheet" href="{% static 'commerce/css/commerce.css' %}">
+{% endblock %}
+
+{% block content %}
+<article>
+  {% block page_content %}{% endblock %}
+</article>
+{% endblock %}

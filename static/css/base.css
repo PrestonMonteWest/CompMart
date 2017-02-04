@@ -1,0 +1,128 @@
+/* for older browsers that don't support HTML5 elements */
+header, nav, main, article, footer {display: block;}
+
+@font-face {
+    font-family: 'square';
+    src: url('Square.ttf');
+}
+
+body {
+    font-family: arial, verdana, sans-serif;
+    font-size: 16px;
+    text-align: center;
+    color: #333;
+    background: #eee;
+    margin: 0;
+    overflow-y: scroll;
+}
+
+/* window shadow */
+body::before {
+    content: "";
+    position: fixed;
+    z-index: 1;
+    top: -10px;
+    left: -1%;
+    width: 102%;
+    height: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.8);
+}
+
+body > div {
+    min-height: 85vh;
+    background: white;
+    border-bottom: 1px solid #ccc;
+}
+
+/* defaults */
+
+ul {
+    list-style: none;
+    margin: 20px 0;
+    padding: 0;
+}
+
+a {
+    color: #33a;
+    text-decoration: none;
+}
+
+p {margin: 20px 0;}
+
+input {
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+
+h2 {
+    position: relative;
+    margin: 20px 0;
+    padding-bottom: 5px;
+    font-size: 2em;
+    color: rgba(0,0,0,0.5);
+}
+
+table {border-collapse: collapse;}
+
+td, th {padding: 10px;}
+
+/* defaults end */
+/* page header */
+
+header[role="banner"] {
+    position: relative;
+    background: #a00;
+    background: -webkit-linear-gradient(#c00,#a00);
+    background: -o-linear-gradient(#c00,#a00);
+    background: -moz-linear-gradient(#c00,#a00);
+    background: linear-gradient(#c00,#a00);
+    border-bottom: 1px solid #a66;
+}
+
+h1 {
+    margin: 0;
+    font: 3.5em square, monospace;
+    letter-spacing: 0.025em;
+    color: white;
+    text-shadow: 0.05em 0.05em black;
+}
+
+header[role="banner"] > nav {
+    position: absolute;
+    top: 100%;
+    box-sizing: border-box;
+    width: 14.5%;
+    border-right: 1px solid #a66;
+    border-bottom: 1px solid #a66;
+    border-bottom-right-radius: 5px;
+    background: #a00;
+    background: -webkit-linear-gradient(#a00,#800);
+    background: -o-linear-gradient(#a00,#800);
+    background: -moz-linear-gradient(#a00,#800);
+    background: linear-gradient(#a00,#800);
+}
+
+header[role="banner"] ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+header[role="banner"] li {margin: 15px 0;}
+
+header[role="banner"] a {color: white;}
+
+header[role="banner"] a:hover {text-decoration: underline;}
+
+/* page header end */
+/* main */
+
+main {border-top: 1px solid #ccc;}
+
+/* main end */
+/* page footer */
+
+footer[role="contentinfo"] > p {color: #555;}
+
+/* page footer end */

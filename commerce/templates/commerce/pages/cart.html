@@ -1,0 +1,42 @@
+{% extends 'commerce/commerce.html' %}
+
+{% block title %}Cart{% endblock %}
+
+{% load static %}
+{% block styles %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'commerce/css/pages/cart.css' %}">
+{% endblock %}
+
+{% block page_content %}
+{% if user.is_authenticated %}
+<h2>{{ user.username }}'s Cart</h2>
+{% else %}
+<h2>Your Cart</h2>
+{% endif %}
+{% if items %}
+<form class="cart" method="post" action="{% url 'commerce:cart' %}">
+  {% csrf_token %}
+  <table>
+    <tr>
+      <th>Name</th><th>Price</th><th>Quantity</th><th></th>
+    </tr>
+    {% for item in items %}
+    <tr>
+      <td><a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a></td>
+      <td>${{ item.product.price }}</td>
+      <td><input type="number" name="update.{{ item.product.id }}" min="1" value="{{ item.quantity }}"></td>
+      <td><input type="submit" name="{{ item.product.id }}" value="Delete"></td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p>Total: ${{ total }}</p>
+  <div>
+    <input type="submit" value="Update">
+    <input type="submit" name="checkout" value="Checkout">
+  </div>
+</form>
+{% else %}
+<p class="text"><i>Cart Empty</i></p>
+{% endif %}
+{% endblock %}

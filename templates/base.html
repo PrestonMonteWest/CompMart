@@ -6,8 +6,8 @@
     <meta name="author" content="{% block author %}Preston West{% endblock %}">
     <meta name="description" content="This is a test site.">
     {% load static %}
-    {% block style %}
-    <link rel="stylesheet" href="{% static 'commerce/css/layout.css' %}">
+    {% block styles %}
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
     {% endblock %}
     <link rel="icon" href="{% static 'images/cmicon.png' %}">
   </head>
@@ -31,7 +31,9 @@
 	  </ul>
 	</nav>
       </header>
-      {% block content %}{% endblock %}
+      <main>
+	{% block content %}{% endblock %}
+      </main>
     </div>
     <footer role="contentinfo">
       <p class="copyright">{{ site_name }} &copy; {{ year }}</p>

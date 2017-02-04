@@ -90,7 +90,7 @@ DATABASES = {
     },
     'sqlite': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'compmart',
+        'NAME': os.path.join(BASE_DIR, 'compmart'),
     }
 }
 

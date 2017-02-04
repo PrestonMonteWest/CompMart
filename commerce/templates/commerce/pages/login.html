@@ -1,0 +1,37 @@
+{% extends 'commerce/commerce.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block page_content %}
+<div class="form">
+  <h2>Login</h2>
+  <hr>
+  {% if errors %}
+  <ul class="error list">
+    {% for error in errors %}
+    <li>{{ error }}</li>
+    {% endfor %}
+  </ul>
+  <hr>
+  {% endif %}
+  <form method="post" action="">
+    {% csrf_token %}
+    <div>
+      <label for="username">Email/Username:</label>
+      <input type="text" name="username" id="username"
+	     {% if errors %}
+	     value="{{ username }}"
+	     {% endif %}
+	     autofocus required>
+    </div>
+    <div>
+      <label for="password">Password:</label>
+      <input type="password" name="password" id="password" required>
+    </div>
+    <div>
+      <input type="submit" value="Log In">
+    </div>
+  </form>
+</div>
+<p>Need an account? <a href="{% url 'commerce:register' %}">Sign up here!</a></p>
+{% endblock %}
