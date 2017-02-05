@@ -72,4 +72,11 @@ article > h2::after {
     background: #eee;
 }
 
+.image-box > img {
+    max-width: 100%;
+    max-height: 200px;
+    width: auto;
+    height: auto;
+}
+
 /* general classes end */
