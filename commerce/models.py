@@ -161,4 +161,8 @@ class OrderItem(models.Model):
 
     order = models.ForeignKey(Order, models.CASCADE)
     product = models.ForeignKey(Product, models.PROTECT)
+    purchase_price = models.DecimalField(max_digits=6, decimal_places=2)
     quantity = models.PositiveSmallIntegerField()
+
+    def __str__(self):
+        return '{}, {}'.format(self.order, self.product)
