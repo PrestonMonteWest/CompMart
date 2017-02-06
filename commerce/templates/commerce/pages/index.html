@@ -8,6 +8,14 @@
 
 {% block page_content %}
 <h2>Welcome!</h2>
+<form class="search" action="{% url 'index' %}" method="get">
+  <input type="text" name="q" value="{{ query }}">
+  <input type="submit" value="Search">
+</form>
+{% if product_list %}
+{% if query %}
+<p class="text">{{ product_list|length }} product{{ product_list|pluralize }} found.</p>
+{% endif %}
 <div class="container">
   {% for product in product_list %}
   <div class="product">
@@ -26,8 +34,9 @@
     <p>{{ product.description|default:"<i>No Description</i>"|truncatechars:30 }}</p>
     <a class="button" href="{% url 'commerce:add' product.id %}">Add</a>
   </div>
-  {% empty %}
-  <p class="text">There are no products.</p>
   {% endfor %}
 </div>
+{% else %}
+<p class="text">No products found!</p>
+{% endif %}
 {% endblock %}

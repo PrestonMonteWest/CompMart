@@ -1,3 +1,19 @@
+.search {margin: 20px 0;}
+
+.search > input {
+    box-sizing: border-box;
+    border-radius: 5px;
+}
+
+.search > input:focus {
+    outline: none;
+    box-shadow: 0 0 0 1px grey;
+}
+
+.search > input[type="text"] {width: 85%;}
+
+.search > input[type="submit"] {width: 10%;}
+
 .container {
     display: -webkit-box;
     display: -moz-box;
@@ -5,14 +21,13 @@
     display: -webkit-flex;
     display: flex;
     flex-flow: row wrap;
-    align-items: flex-start;
-    justify-content: space-between;
+    justify-content: space-around;
 }
 
 .product {
+    margin: 20px 0;
     display: inline-block;
     box-sizing: border-box;
-    margin-bottom: 20px;
     width: 22%;
     border: 1px solid #ccc;
     border-radius: 5px;

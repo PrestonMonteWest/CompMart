@@ -3,6 +3,7 @@ from django.views.decorators.http import require_http_methods, require_safe
 from django.contrib.auth import authenticate, logout as auth_logout, login as auth_login
 from django.http import Http404
 from django.views.generic import ListView, DetailView
+from django.db.models import Q
 from .models import Product
 
 def get_cart(session):
@@ -26,11 +27,22 @@ class Index(ListView):
         else:
             page = 1
 
-        start = (page - 1) * Index.page_len
+        start = (page - 1) * self.page_len
         if start >= self.num_products:
             raise Http404()
 
-        return Product.objects.all()[start:start+Index.page_len]
+        self.query = self.request.GET.get('q', '')
+        if self.query:
+            terms = self.query.split()
+            query = Q(name__icontains=terms.pop())
+            for term in terms:
+                query |= Q(name__icontains=term)
+
+            products = Product.objects.filter(query)
+        else:
+            products = Product.objects.all()
+
+        return products[start:start+self.page_len]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -39,6 +51,7 @@ class Index(ListView):
         num_pages = (self.num_products // Index.page_len)
         num_pages += (1 if self.num_products % Index.page_len != 0 else 0)
         context['num_pages'] = num_pages
+        context['query'] = self.query
 
         return context
 
@@ -129,7 +142,7 @@ def cart(request):
     items = []
     total = 0
 
-    for pk in cart:
+    for pk in sorted(cart):
         try:
             product = Product.objects.get(pk=pk)
         except Product.DoesNotExist:
