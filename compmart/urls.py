@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from commerce.views import Index
+from . import views
 
 urlpatterns = [
     url(r'^(?P<page>[1-9]\d*)?$', Index.as_view(), name='index'),

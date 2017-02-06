@@ -70,9 +70,12 @@ class AddressBase(models.Model):
     street = models.CharField(max_length=60)
     city = models.CharField(max_length=20)
     state = models.CharField(max_length=2, choices=STATES)
-    zip_code = models.CharField(max_length=5)
+    zip_code = models.CharField('ZIP code', max_length=5)
 
 class Product(models.Model):
+    class Meta:
+        ordering = ('name',)
+
     reviewers = models.ManyToManyField(User, through='Review', related_name='reviewed_products')
     name = models.CharField(max_length=40)
     price = models.DecimalField(max_digits=6, decimal_places=2)
@@ -103,6 +106,7 @@ class Product(models.Model):
 
 class Review(models.Model):
     class Meta:
+        ordering = ('-pub_date',)
         unique_together = (('product', 'user'),)
 
     product = models.ForeignKey(Product, models.CASCADE, related_name='reviews')
@@ -110,19 +114,21 @@ class Review(models.Model):
     title = models.CharField(max_length=30)
     body = models.TextField()
     rating = models.PositiveSmallIntegerField()
-    pub_date = models.DateTimeField(default=timezone.now)
+    pub_date = models.DateTimeField('publication date', default=timezone.now)
 
     def __str__(self):
         return self.title
 
 class Address(AddressBase):
     class Meta:
+        ordering = ('street', 'city', 'state')
         unique_together = (('user', 'street', 'city', 'state'),)
+        verbose_name_plural = 'Addresses'
 
     user = models.ForeignKey(User, models.CASCADE, related_name='addresses')
 
     def __str__(self):
-        return '{} at {}, {}, {} {}'.format(
+        return '{}, {}, {}, {} {}'.format(
             self.user.username,
             self.street,
             self.city,
@@ -145,7 +151,7 @@ class CreditCard(models.Model):
 
 class Order(AddressBase):
     class Meta:
-        ordering = ('purchase_date',)
+        ordering = ('-purchase_date',)
 
     products = models.ManyToManyField(Product, through='OrderItem', related_name='orders')
     user = models.ForeignKey(User, models.CASCADE, related_name='orders')
@@ -153,7 +159,7 @@ class Order(AddressBase):
     purchase_date = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return 'Order #{}'.format(self.id)
+        return '{}, {}'.format(self.user, self.purchase_date)
 
 class OrderItem(models.Model):
     class Meta:
