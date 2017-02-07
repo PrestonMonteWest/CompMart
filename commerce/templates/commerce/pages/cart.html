@@ -9,11 +9,13 @@
 {% endblock %}
 
 {% block page_content %}
-{% if user.is_authenticated %}
-<h2>{{ user.username }}'s Cart</h2>
-{% else %}
-<h2>Your Cart</h2>
-{% endif %}
+<h2>
+  {% if user.is_authenticated %}
+  {{ user.first_name }}'s Cart
+  {% else %}
+  Your Cart
+  {% endif %}
+</h2>
 {% if items %}
 <form class="cart" method="post" action="{% url 'commerce:cart' %}">
   {% csrf_token %}
@@ -37,6 +39,6 @@
   </div>
 </form>
 {% else %}
-<p class="text"><i>Cart Empty</i></p>
+<p class="text">Cart is empty.</p>
 {% endif %}
 {% endblock %}

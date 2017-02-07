@@ -11,7 +11,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'price', 'description', 'stock', 'discontinued')
     search_fields = ('name', 'description')
     list_filter = ('discontinued',)
-    fields = ('name', 'description', 'price', 'discontinued', 'image')
+    fields = ('name', 'description', 'price', 'stock', 'discontinued', 'image')
 
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ('user', 'product', 'title', 'body', 'rating', 'pub_date')
