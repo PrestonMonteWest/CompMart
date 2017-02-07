@@ -7,14 +7,25 @@
 {% endblock %}
 
 {% block page_content %}
-<h2>Welcome!</h2>
+<h2>Welcome{% if user.is_authenticated %} {{ user.first_name }}{% endif %}!</h2>
+{% if errors %}
+<ul>
+  {% for error in errors %}
+  <li class="error">{{ error }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
 <form class="search" action="{% url 'index' %}" method="get">
-  <input type="text" name="q" value="{{ query }}">
-  <input type="submit" value="Search">
+  {% for input in form %}
+  {{ input }}
+  {% endfor %}
+  <input class="button" type="submit" value="Search" />
 </form>
 {% if product_list %}
 {% if query %}
-<p class="text">{{ product_list|length }} product{{ product_list|pluralize }} found.</p>
+<p class="text">
+  {{ product_list|length }} product{{ product_list|pluralize }} found.
+</p>
 {% endif %}
 <div class="container">
   {% for product in product_list %}
@@ -31,7 +42,9 @@
       <i>No Rating</i>
       {% endif %}
     </p>
-    <p>{{ product.description|default:"<i>No Description</i>"|truncatechars:30 }}</p>
+    <p>
+      {{ product.description|default:"<i>No Description</i>"|truncatechars:30 }}
+    </p>
     <a class="button" href="{% url 'commerce:add' product.id %}">Add</a>
   </div>
   {% endfor %}

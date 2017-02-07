@@ -5,12 +5,29 @@ from django.http import Http404
 from django.views.generic import ListView, DetailView
 from django.db.models import Q
 from .models import Product
+from .forms import ProductSearchForm
 
 def get_cart(session):
+    '''
+    Given a Django session, if the cart exists return it,
+    otherwise return an empty cart
+    '''
+
     if 'cart' not in session:
         session['cart'] = {}
 
     return session['cart']
+
+def flatten_errors(form):
+    '''
+    Given a Form class, flatten form errors into a single list
+    '''
+
+    errors = []
+    for input_element in form:
+        errors.extend(input_element.errors)
+
+    return errors
 
 class Index(ListView):
     template_name = 'commerce/pages/index.html'
@@ -21,19 +38,27 @@ class Index(ListView):
         self.num_products = Product.objects.count()
 
         # kwargs always has page key
-        page = self.kwargs['page']
+        page = self.kwargs.get('page', None)
         if page is not None:
-            page = int(page)
+            self.page = int(page)
         else:
-            page = 1
+            self.page = 1
 
-        start = (page - 1) * self.page_len
+        start = (self.page - 1) * self.page_len
         if start >= self.num_products:
             raise Http404()
 
-        self.query = self.request.GET.get('q', '')
-        if self.query:
-            terms = self.query.split()
+        # determine if the request is from a search form submission
+        # if it is, bind it
+        self.search = ProductSearchForm(auto_id=False)
+        for key in self.request.GET:
+            if key in self.search.declared_fields:
+                self.search = ProductSearchForm(self.request.GET, auto_id=False)
+                break
+
+        if self.search.is_valid():
+            # emulate keyword searching against database using Q objects
+            terms = self.search.cleaned_data['query'].split()
             query = Q(name__icontains=terms.pop())
             for term in terms:
                 query |= Q(name__icontains=term)
@@ -46,12 +71,13 @@ class Index(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['page'] = self.kwargs['page']
+        context['page'] = self.page
+        context['form'] = self.search
+        context['errors'] = flatten_errors(self.search)
 
-        num_pages = (self.num_products // Index.page_len)
-        num_pages += (1 if self.num_products % Index.page_len != 0 else 0)
+        num_pages = (self.num_products // self.page_len)
+        num_pages += (1 if self.num_products % self.page_len != 0 else 0)
         context['num_pages'] = num_pages
-        context['query'] = self.query
 
         return context
 
