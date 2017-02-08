@@ -48,9 +48,12 @@ article > h2::after {
 .list > li:not(:last-child) {border-bottom: inherit;}
 
 .error {
+    display: inline-block;
+    margin: 0;
     background: rgba(255,0,0,0.35);
     color: #800;
-    border-color: #800;
+    border: 1px solid #800;
+    border-radius: 5px;
 }
 
 .button {

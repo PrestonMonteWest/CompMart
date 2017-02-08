@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.views.decorators.http import require_http_methods, require_safe
-from django.contrib.auth import authenticate, logout as auth_logout, login as auth_login
+from django.contrib import auth
+from django.contrib.auth.forms import UserCreationForm
 from django.http import Http404
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, CreateView
 from django.db.models import Q
 from .models import Product
-from .forms import ProductSearchForm
+from . import forms
 
 def get_cart(session):
     '''
@@ -30,7 +31,7 @@ def flatten_errors(form):
     return errors
 
 class Index(ListView):
-    template_name = 'commerce/pages/index.html'
+    template_name = 'commerce/index.html'
     page_len = 12
 
     def get_queryset(self):
@@ -50,10 +51,14 @@ class Index(ListView):
 
         # determine if the request is from a search form submission
         # if it is, bind it
-        self.search = ProductSearchForm(auto_id=False)
+        self.search = forms.ProductSearchForm(auto_id=False)
         for key in self.request.GET:
             if key in self.search.declared_fields:
-                self.search = ProductSearchForm(self.request.GET, auto_id=False)
+                self.search = forms.ProductSearchForm(
+                    self.request.GET,
+                    auto_id=False
+                )
+
                 break
 
         if self.search.is_valid():
@@ -83,34 +88,12 @@ class Index(ListView):
 
 class Details(DetailView):
     model = Product
-    template_name = 'commerce/pages/product.html'
-
-@require_http_methods(['GET', 'POST'])
-def login(request):
-    template_name = 'commerce/pages/login.html'
-    if request.method != 'POST':
-        return render(request, template_name, context={
-            'errors': [],
-        })
-
-    username = request.POST.get('username', '')
-    password = request.POST.get('password', '')
-    user = authenticate(username=username, password=password)
-    if user:
-        auth_login(request, user)
-        return redirect(reverse('index'))
-    else:
-        return render(request, template_name, context={
-            'errors': [
-                'Invalid credential combination!',
-            ],
-            'username': username,
-        })
+    template_name = 'commerce/product.html'
 
 @require_safe
 def logout(request):
     cart = get_cart(request.session)
-    auth_logout(request)
+    auth.logout(request)
     request.session['cart'] = cart
     return redirect(reverse('index'))
 
@@ -125,7 +108,8 @@ def add(request, pk):
         cart[pk] = 1
 
     request.session.modified = True
-    return redirect(reverse('index'))
+    url = request.GET.get('next', reverse('index'))
+    return redirect(url)
 
 @require_http_methods(['HEAD', 'GET', 'POST'])
 def cart(request):
@@ -188,7 +172,13 @@ def cart(request):
         'items': items,
     }
 
-    return render(request, 'commerce/pages/cart.html', context=context)
+    return render(request, 'commerce/cart.html', context=context)
 
-def register(request):
-    raise Http404('Cannot register at this time.')
+class Register(CreateView):
+    template_name = 'commerce/register.html'
+    form_class = UserCreationForm
+    success_url = '/'
+
+    def get_context_data(self):
+        context = super().get_context_data()
+        context['errors'] = flatten_errors(context['form'])

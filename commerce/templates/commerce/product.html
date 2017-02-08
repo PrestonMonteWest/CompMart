@@ -5,7 +5,7 @@
 {% load static %}
 {% block styles %}
 {{ block.super }}
-<link rel="stylesheet" href="{% static 'commerce/css/pages/product.css' %}">
+<link rel="stylesheet" href="{% static 'commerce/css/product.css' %}">
 {% endblock %}
 
 {% block page_content %}
@@ -16,8 +16,15 @@
   <div class="info">
     <h2>{{ product.name }}</h2>
     <p>${{ product.price }}</p>
-    <p>{% if product.rating %}%{{ product.rating }}{% else %}<i>No Rating</i>{% endif %}</p>
-    <a class="button" href="{% url 'commerce:add' product.id %}">Add</a>
+    <p>
+      {% if product.rating %}
+      %{{ product.rating }}
+      {% else %}
+      <i>No Rating</i>
+      {% endif %}
+    </p>
+    <a class="button"
+       href="{% url 'commerce:add' product.id %}?next={% url 'commerce:product' product.id %}">Add</a>
   </div>
   <p class="text">{{ product.description|default:"<i>No Description</i>" }}</p>
 </div>

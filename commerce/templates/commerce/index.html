@@ -3,15 +3,15 @@
 {% load static %}
 {% block styles %}
 {{ block.super }}
-<link rel="stylesheet" href="{% static 'commerce/css/pages/index.css' %}">
+<link rel="stylesheet" href="{% static 'commerce/css/index.css' %}">
 {% endblock %}
 
 {% block page_content %}
 <h2>Welcome{% if user.is_authenticated %} {{ user.first_name }}{% endif %}!</h2>
 {% if errors %}
-<ul>
+<ul class="error list">
   {% for error in errors %}
-  <li class="error">{{ error }}</li>
+  <li>{{ error }}</li>
   {% endfor %}
 </ul>
 {% endif %}

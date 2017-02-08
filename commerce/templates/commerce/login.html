@@ -14,20 +14,14 @@
   </ul>
   <hr>
   {% endif %}
-  <form method="post" action="">
+  <form method="post" action="{% url 'commerce:login' %}">
     {% csrf_token %}
+    {% for input in form %}
     <div>
-      <label for="username">Email/Username:</label>
-      <input type="text" name="username" id="username"
-	     {% if errors %}
-	     value="{{ username }}"
-	     {% endif %}
-	     autofocus required>
+      {{ input.label_tag }}
+      {{ input }}
     </div>
-    <div>
-      <label for="password">Password:</label>
-      <input type="password" name="password" id="password" required>
-    </div>
+    {% endfor %}
     <div>
       <input type="submit" value="Log In">
     </div>
