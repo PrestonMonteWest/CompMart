@@ -6,7 +6,7 @@ from django.http import Http404
 from django.views.generic import ListView, DetailView, CreateView
 from django.db.models import Q
 from .models import Product
-from . import forms
+from .forms import ProductSearchForm
 
 def get_cart(session):
     '''
@@ -18,17 +18,6 @@ def get_cart(session):
         session['cart'] = {}
 
     return session['cart']
-
-def flatten_errors(form):
-    '''
-    Given a Form class, flatten form errors into a single list
-    '''
-
-    errors = []
-    for input_element in form:
-        errors.extend(input_element.errors)
-
-    return errors
 
 class Index(ListView):
     template_name = 'commerce/index.html'
@@ -51,10 +40,10 @@ class Index(ListView):
 
         # determine if the request is from a search form submission
         # if it is, bind it
-        self.search = forms.ProductSearchForm(auto_id=False)
+        self.search = ProductSearchForm(auto_id=False)
         for key in self.request.GET:
             if key in self.search.declared_fields:
-                self.search = forms.ProductSearchForm(
+                self.search = ProductSearchForm(
                     self.request.GET,
                     auto_id=False
                 )
@@ -78,7 +67,6 @@ class Index(ListView):
         context = super().get_context_data(**kwargs)
         context['page'] = self.page
         context['form'] = self.search
-        context['errors'] = flatten_errors(self.search)
 
         num_pages = (self.num_products // self.page_len)
         num_pages += (1 if self.num_products % self.page_len != 0 else 0)
@@ -178,7 +166,3 @@ class Register(CreateView):
     template_name = 'commerce/register.html'
     form_class = UserCreationForm
     success_url = '/'
-
-    def get_context_data(self):
-        context = super().get_context_data()
-        context['errors'] = flatten_errors(context['form'])

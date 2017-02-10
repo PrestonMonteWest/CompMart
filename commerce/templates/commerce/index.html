@@ -8,15 +8,15 @@
 
 {% block page_content %}
 <h2>Welcome{% if user.is_authenticated %} {{ user.first_name }}{% endif %}!</h2>
-{% if errors %}
-<ul class="error list">
-  {% for error in errors %}
-  <li>{{ error }}</li>
-  {% endfor %}
-</ul>
-{% endif %}
 <form class="search" action="{% url 'index' %}" method="get">
   {% for input in form %}
+  {% if input.errors %}
+  <ul class="error list">
+    {% for error in input.errors %}
+    <li>{{ error }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
   {{ input }}
   {% endfor %}
   <input class="button" type="submit" value="Search" />
