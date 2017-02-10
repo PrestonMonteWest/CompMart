@@ -6,17 +6,23 @@
 <div class="form">
   <h2>Login</h2>
   <hr>
-  {% if errors %}
+  {% if form.non_field_errors %}
   <ul class="error list">
-    {% for error in errors %}
+    {% for error in form.non_field_errors %}
     <li>{{ error }}</li>
     {% endfor %}
   </ul>
   <hr>
   {% endif %}
   <form method="post" action="{% url 'commerce:login' %}">
-    {% csrf_token %}
     {% for input in form %}
+    {% if input.errors %}
+    <ul class="error list">
+      {% for error in input.errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
     <div>
       {{ input.label_tag }}
       {{ input }}
@@ -25,6 +31,7 @@
     <div>
       <input type="submit" value="Log In">
     </div>
+    {% csrf_token %}
   </form>
 </div>
 <p>Need an account? <a href="{% url 'commerce:register' %}">Sign up here!</a></p>
