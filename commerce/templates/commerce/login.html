@@ -3,11 +3,11 @@
 {% block title %}Login{% endblock %}
 
 {% block page_content %}
-<div class="form">
+<div class="rounded form">
   <h2>Login</h2>
   <hr>
   {% if form.non_field_errors %}
-  <ul class="error list">
+  <ul class="rounded error list">
     {% for error in form.non_field_errors %}
     <li>{{ error }}</li>
     {% endfor %}
@@ -30,7 +30,7 @@
     </div>
     {% endfor %}
     <div>
-      <input type="submit" value="Log In">
+      <input class="rounded button" type="submit" value="Login">
     </div>
   </form>
 </div>

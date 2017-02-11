@@ -19,6 +19,10 @@ SITE_ID = 2
 
 LOGIN_REDIRECT_URL = 'index'
 
+ADMINS = [('Preston', 'prestonmontewest@gmail.com')]
+
+INTERNAL_IPS = ['127.0.0.1']
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
@@ -67,6 +71,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
+                'django.template.context_processors.i18n',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',

@@ -11,7 +11,7 @@
 <form class="search" action="{% url 'index' %}" method="get">
   {% for input in form %}
   {% if input.errors %}
-  <ul class="error list">
+  <ul class="rounded error list">
     {% for error in input.errors %}
     <li>{{ error }}</li>
     {% endfor %}
@@ -19,7 +19,7 @@
   {% endif %}
   {{ input }}
   {% endfor %}
-  <input class="button" type="submit" value="Search" />
+  <input class="rounded button" type="submit" value="Search" />
 </form>
 {% if product_list %}
 {% if query %}
@@ -29,8 +29,8 @@
 {% endif %}
 <div class="container">
   {% for product in product_list %}
-  <div class="product">
-    <div class="image-box">
+  <div class="rounded product">
+    <div class="rounded image-box">
       <img alt="{{ product.name }}" src="{{ product.image.url }}">
     </div>
     <p><a href="{{ product.get_absolute_url }}">{{ product.name|upper }}</a></p>
@@ -43,9 +43,9 @@
       {% endif %}
     </p>
     <p>
-      {{ product.description|default:"<i>No Description</i>"|truncatechars:30 }}
+      {{ product.description|default:"<i>No Description</i>"|truncatewords:15 }}
     </p>
-    <a class="button" href="{% url 'commerce:add' product.id %}">Add</a>
+    <a class="rounded button" href="{% url 'commerce:add' product.id %}">Add</a>
   </div>
   {% endfor %}
 </div>

@@ -1,16 +1,6 @@
 .search {margin: 20px 0;}
 
-.search > input {font-size: 1em;}
-
-.search > input:focus {outline: none;}
-
-.search > input[type="text"] {
-    box-sizing: border-box;
-    border-radius: 5px;
-    width: 85%;
-}
-
-.search > input[type="text"]:focus {box-shadow: 0 0 0 1px grey;}
+.search > input[type="text"] {width: 85%;}
 
 .search > input[type="submit"] {width: 10%;}
 
@@ -30,7 +20,6 @@
     box-sizing: border-box;
     width: 22%;
     border: 1px solid #ccc;
-    border-radius: 5px;
     background: #eee;
 }
 
@@ -41,7 +30,6 @@
 .product > .image-box {
     border-bottom: 1px solid #ccc;
     padding: 10px;
-    border-radius: inherit;
     background: white;
 }
 

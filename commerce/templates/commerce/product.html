@@ -23,9 +23,8 @@
       <i>No Rating</i>
       {% endif %}
     </p>
-    <a class="button"
-       href="{% url 'commerce:add' product.id %}?next={% url 'commerce:product' product.id %}">Add</a>
+    <a class="rounded button" href="{{ add }}?next={{ product }}">Add</a>
   </div>
-  <p class="text">{{ product.description|default:"<i>No Description</i>" }}</p>
+  <p class="rounded text">{{ product.description|default:"<i>No Description</i>" }}</p>
 </div>
 {% endblock %}
