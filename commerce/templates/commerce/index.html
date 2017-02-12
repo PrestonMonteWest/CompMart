@@ -36,11 +36,13 @@
     <p><a href="{{ product.get_absolute_url }}">{{ product.name|upper }}</a></p>
     <p>${{ product.price }}</p>
     <p>
-      {% if product.rating %}
-      %{{ product.rating }}
+      {% with count=product.reviews.count %}
+      {% ifnotequal count 0 %}
+      %{{ product.rating }} ({{ count }})
       {% else %}
       <i>No Rating</i>
-      {% endif %}
+      {% endifnotequal %}
+      {% endwith %}
     </p>
     <p>
       {{ product.description|default:"<i>No Description</i>"|truncatewords:15 }}
