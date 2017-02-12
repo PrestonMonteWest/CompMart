@@ -72,6 +72,10 @@ class AddressBase(models.Model):
     state = models.CharField(max_length=2, choices=STATES)
     zip_code = models.CharField('ZIP code', max_length=5)
 
+class ActiveProductManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(discontinued=False)
+
 class Product(models.Model):
     class Meta:
         ordering = ('name',)
@@ -83,6 +87,8 @@ class Product(models.Model):
     discontinued = models.BooleanField(default=False)
     stock = models.PositiveSmallIntegerField()
     image = models.ImageField(upload_to='images/products')
+    objects = models.Manager()
+    active_objects = ActiveProductManager()
 
     def __str__(self):
         return self.name

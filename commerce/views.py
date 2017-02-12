@@ -25,7 +25,7 @@ class Index(ListView):
 
     def get_queryset(self):
         # for value reuse in context method
-        self.num_products = Product.objects.count()
+        self.num_products = Product.active_objects.count()
 
         # kwargs always has page key
         page = self.kwargs.get('page', None)
@@ -57,9 +57,9 @@ class Index(ListView):
             for term in terms:
                 query |= Q(name__icontains=term)
 
-            products = Product.objects.filter(query)
+            products = Product.active_objects.filter(query)
         else:
-            products = Product.objects.all()
+            products = Product.active_objects.all()
 
         return products[start:start+self.page_len]
 
@@ -77,6 +77,13 @@ class Index(ListView):
 class Details(DetailView):
     model = Product
     template_name = 'commerce/product.html'
+
+    def get_object(self, queryset=None):
+        product = super().get_object(queryset)
+        if product.discontinued:
+            raise Http404()
+
+        return product
 
 @require_safe
 def logout(request):
@@ -142,7 +149,7 @@ def cart(request):
 
     for pk in sorted(cart):
         try:
-            product = Product.objects.get(pk=pk)
+            product = Product.active_objects.get(pk=pk)
         except Product.DoesNotExist:
             del cart[pk]
             request.session.modified = True
