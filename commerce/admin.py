@@ -18,7 +18,8 @@ class ReviewAdmin(admin.ModelAdmin):
     search_fields = ('title', 'body')
     list_filter = ('pub_date', 'rating')
     date_hierarchy = 'pub_date'
-    fields = ('title', 'body', 'rating')
+    fields = ('user', 'product', 'title', 'body', 'rating')
+    raw_id_fields = ('user', 'product')
 
 class OrderAdmin(admin.ModelAdmin):
     list_display = ('user', 'street', 'city', 'state', 'total', 'purchase_date')

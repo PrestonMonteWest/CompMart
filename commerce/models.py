@@ -95,7 +95,7 @@ class Product(models.Model):
     @property
     def rating(self):
         from django.db.models import Avg
-        return self.reviews.aggregate(Avg('rating'))['rating__avg']
+        return round(self.reviews.aggregate(Avg('rating'))['rating__avg'])
 
     @property
     def in_stock(self):
