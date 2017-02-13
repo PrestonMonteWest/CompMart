@@ -25,20 +25,6 @@ class Index(ListView):
     page_len = 12
 
     def get_queryset(self):
-        # for value reuse in context method
-        self.num_products = Product.active_objects.count()
-
-        # kwargs always has page key
-        page = self.kwargs.get('page', None)
-        if page is not None:
-            self.page = int(page)
-        else:
-            self.page = 1
-
-        start = (self.page - 1) * self.page_len
-        if start >= self.num_products:
-            raise Http404()
-
         # determine if the request is from a search form submission
         # if it is, bind it
         self.search = ProductSearchForm(auto_id=False)
@@ -62,6 +48,16 @@ class Index(ListView):
         else:
             products = Product.active_objects.all()
 
+        self.num_products = products.count()
+
+        # page for pagination
+        page = self.kwargs.get('page', None)
+        if page is not None:
+            self.page = int(page)
+        else:
+            self.page = 1
+
+        start = (self.page - 1) * self.page_len
         return products[start:start+self.page_len]
 
     def get_context_data(self, **kwargs):

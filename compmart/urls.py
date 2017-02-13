@@ -20,7 +20,7 @@ from django.conf.urls.static import static
 from commerce.views import Index
 
 urlpatterns = [
-    url(r'^(?P<page>[1-9]\d*)?$', Index.as_view(), name='index'),
+    url(r'^(?:(?P<page>[1-9]\d*)/)?$', Index.as_view(), name='index'),
     url(r'^commerce/', include('commerce.urls')),
     url(r'^admin/docs/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', admin.site.urls),
