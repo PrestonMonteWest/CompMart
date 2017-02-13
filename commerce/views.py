@@ -21,6 +21,7 @@ def get_cart(session):
 
 class Index(ListView):
     template_name = 'commerce/index.html'
+    context_object_name = 'products'
     page_len = 12
 
     def get_queryset(self):
@@ -71,6 +72,7 @@ class Index(ListView):
         num_pages = (self.num_products // self.page_len)
         num_pages += (1 if self.num_products % self.page_len != 0 else 0)
         context['num_pages'] = num_pages
+        context['page_iter'] = range(num_pages)
 
         return context
 

@@ -21,14 +21,14 @@
   {% endfor %}
   <input class="rounded button" type="submit" value="Search" />
 </form>
-{% if product_list %}
+{% if products %}
 {% if query %}
 <p class="text">
-  {{ product_list|length }} product{{ product_list|pluralize }} found.
+  {{ products|length }} product{{ product_list|pluralize }} found.
 </p>
 {% endif %}
 <div class="container">
-  {% for product in product_list %}
+  {% for product in products %}
   <div class="rounded product">
     <div class="rounded image-box">
       <img alt="{{ product.name }}" src="{{ product.image.url }}">
@@ -51,6 +51,31 @@
   </div>
   {% endfor %}
 </div>
+{% ifnotequal num_pages 1 %}
+<ul class="pagination">
+  <li>
+    {% ifnotequal page 1 %}
+    <a href="{% url 'index' page|add:'-1' %}">&lt;</a>
+    {% else %}
+    <a style="visibility:hidden;">&lt;</a>
+    {% endifnotequal %}
+  </li>
+  {% for iteration in page_iter %}
+  {% ifequal forloop.counter page %}
+  <li><a class="active">{{ forloop.counter }}</a></li>
+  {% else %}
+  <li><a href="{% url 'index' forloop.counter %}">{{ forloop.counter }}</a></li>
+  {% endifequal %}
+  {% endfor %}
+  <li>
+    {% ifnotequal page num_pages %}
+    <a href="{% url 'index' page|add:'1' %}">&gt;</a>
+    {% else %}
+    <a style="visibility:hidden;">&gt;</a>
+    {% endifnotequal %}
+  </li>
+</ul>
+{% endifnotequal %}
 {% else %}
 <p class="rounded text">No products found!</p>
 {% endif %}
