@@ -29,7 +29,6 @@ input:not([type="submit"]):focus {box-shadow: 0 0 0 1px grey;}
 /* inputs are already rounded */
 input {
     font-size: 0.9em;
-    box-sizing: border-box;
     border-radius: 5px;
 }
 
@@ -76,7 +75,7 @@ input {
     display: inline-block;
     padding: 5px 10px;
     background-color: #a00;
-    border: 1px solid #ccc;
+    border: 1px solid #a99;
     color: white;
     transition: background-color 0.25s;
 }

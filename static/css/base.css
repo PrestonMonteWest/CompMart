@@ -75,7 +75,7 @@ header[role="banner"] {
     background: -o-linear-gradient(#c00,#a00);
     background: -moz-linear-gradient(#c00,#a00);
     background: linear-gradient(#c00,#a00);
-    border-bottom: 1px solid #a66;
+    box-shadow: 2px 2px 2px #a00;
 }
 
 h1 {
@@ -89,10 +89,7 @@ h1 {
 header[role="banner"] > nav {
     position: absolute;
     top: 100%;
-    box-sizing: border-box;
     width: 14.5%;
-    border-right: 1px solid #a66;
-    border-bottom: 1px solid #a66;
     border-bottom-right-radius: 5px;
     background: #a00;
     background: -webkit-linear-gradient(#a00,#800);
@@ -116,7 +113,7 @@ header[role="banner"] a:hover {text-decoration: underline;}
 /* page header end */
 /* main */
 
-main {border-top: 1px solid #ccc;}
+/* main {border-top: 1px solid #ccc;} */
 
 /* main end */
 /* page footer */
