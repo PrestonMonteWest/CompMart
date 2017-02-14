@@ -5,6 +5,8 @@ article {
     width: 69%;
 }
 
+article > h2 {position: relative;}
+
 article > h2::after {
     content: "";
     position: absolute;
@@ -20,13 +22,16 @@ article > h2::after {
 
 input:focus {outline: none;}
 
-input[type="text"], input[type="password"] {
-    font-size: 1em;
+input:not([type="submit"]) {width: 100%;}
+
+input:not([type="submit"]):focus {box-shadow: 0 0 0 1px grey;}
+
+/* inputs are already rounded */
+input {
+    font-size: 0.9em;
     box-sizing: border-box;
     border-radius: 5px;
 }
-
-input[type="text"]:focus, input[type="password"]:focus {box-shadow: 0 0 0 1px grey;}
 
 /* input fields end */
 /* general classes */
@@ -45,9 +50,10 @@ input[type="text"]:focus, input[type="password"]:focus {box-shadow: 0 0 0 1px gr
 
 .form div:not(:last-child) {text-align: left;}
 
-.form label {display: block;}
-
-.form input:not([type="submit"]) {width: 100%;}
+.form label {
+    padding: 5px 0;
+    display: block;
+}
 
 .list {border: 1px solid #ccc;}
 
@@ -68,7 +74,6 @@ input[type="text"]:focus, input[type="password"]:focus {box-shadow: 0 0 0 1px gr
 
 .button {
     display: inline-block;
-    font-size: 1em;
     padding: 5px 10px;
     background-color: #a00;
     border: 1px solid #ccc;

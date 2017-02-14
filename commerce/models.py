@@ -108,7 +108,7 @@ class Product(models.Model):
         return self.stock > 0
 
     def get_absolute_url(self):
-        return reverse('commerce:product', args=(self.id,))
+        return reverse('commerce:product', args=(self.pk,))
 
 class Review(models.Model):
     class Meta:

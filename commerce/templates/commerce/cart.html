@@ -36,7 +36,7 @@
 	       value="{{ item.quantity }}">
       </td>
       <td>
-	<input class="rounded button" type="submit" name="{{ item.product.id }}"
+	<input class="button" type="submit" name="{{ item.product.id }}"
 	       value="Delete">
       </td>
     </tr>
@@ -44,8 +44,8 @@
   </table>
   <p class="rounded">Total: ${{ total }}</p>
   <div>
-    <input class="rounded button" type="submit" value="Update">
-    <input class="rounded button" type="submit" name="checkout" value="Checkout">
+    <input class="button" type="submit" value="Update">
+    <input class="button" type="submit" name="checkout" value="Checkout">
   </div>
 </form>
 {% else %}

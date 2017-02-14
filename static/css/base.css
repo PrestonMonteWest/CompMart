@@ -56,9 +56,7 @@ input {
 }
 
 h2 {
-    position: relative;
     margin: 20px 0;
-    padding-bottom: 5px;
     font-size: 2em;
     color: rgba(0,0,0,0.5);
 }
