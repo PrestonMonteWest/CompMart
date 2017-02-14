@@ -88,7 +88,8 @@ def logout(request):
     cart = get_cart(request.session)
     auth.logout(request)
     request.session['cart'] = cart
-    return redirect(reverse('index'))
+    url = request.GET.get('next', reverse('index'))
+    return redirect(url)
 
 @require_safe
 def add(request, pk):

@@ -20,13 +20,17 @@
 	    <li><a href="{% url 'index' %}">Home</a></li>
 	    <li><a href="{% url 'commerce:cart' %}">Cart</a></li>
 	    {% if user.is_authenticated %}
-	      <li><a href="{% url 'commerce:logout' %}">Logout</a></li>
-	      {% if user.is_staff %}
-	        <li><a href="{% url 'admin:index' %}">Admin</a></li>
-	      {% endif %}
+	    <li>
+	      <a href="{% url 'commerce:logout' %}?next={{ request.path }}">
+		Logout
+	      </a>
+	    </li>
+	    {% if user.is_staff %}
+	    <li><a href="{% url 'admin:index' %}">Admin</a></li>
+	    {% endif %}
 	    {% else %}
-	      <li><a href="{% url 'commerce:login' %}">Login</a></li>
-	      <li><a href="{% url 'commerce:register' %}">Register</a></li>
+	    <li><a href="{% url 'commerce:login' %}">Login</a></li>
+	    <li><a href="{% url 'commerce:register' %}">Register</a></li>
 	    {% endif %}
 	  </ul>
 	</nav>
