@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.utils import timezone
 from django.urls import reverse
 
@@ -80,7 +80,11 @@ class Product(models.Model):
     class Meta:
         ordering = ('name',)
 
-    reviewers = models.ManyToManyField(User, through='Review', related_name='reviewed_products')
+    reviewers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        through='Review',
+        related_name='reviewed_products'
+    )
     name = models.CharField(max_length=40)
     price = models.DecimalField(max_digits=6, decimal_places=2)
     description = models.TextField(max_length=1000, blank=True)
@@ -116,7 +120,11 @@ class Review(models.Model):
         unique_together = (('product', 'user'),)
 
     product = models.ForeignKey(Product, models.CASCADE, related_name='reviews')
-    user = models.ForeignKey(User, models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        models.CASCADE,
+        related_name='reviews'
+    )
     title = models.CharField(max_length=30)
     body = models.TextField()
     rating = models.PositiveSmallIntegerField()
@@ -131,7 +139,11 @@ class Address(AddressBase):
         unique_together = (('user', 'street', 'city', 'state'),)
         verbose_name_plural = 'Addresses'
 
-    user = models.ForeignKey(User, models.CASCADE, related_name='addresses')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        models.CASCADE,
+        related_name='addresses'
+    )
 
     def __str__(self):
         return '{}, {}, {}, {} {}'.format(
@@ -146,7 +158,11 @@ class CreditCard(models.Model):
     class Meta:
         unique_together = (('user', 'card_number'),)
 
-    user = models.ForeignKey(User, models.CASCADE, related_name='cards')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        models.CASCADE,
+        related_name='cards'
+    )
     card_number = models.CharField(max_length=16)
     card_type = models.CharField(max_length=20)
     holder_name = models.CharField(max_length=50)
@@ -160,7 +176,11 @@ class Order(AddressBase):
         ordering = ('-purchase_date',)
 
     products = models.ManyToManyField(Product, through='OrderItem', related_name='orders')
-    user = models.ForeignKey(User, models.CASCADE, related_name='orders')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        models.CASCADE,
+        related_name='orders'
+    )
     total = models.DecimalField(max_digits=7, decimal_places=2)
     purchase_date = models.DateTimeField(default=timezone.now)
 

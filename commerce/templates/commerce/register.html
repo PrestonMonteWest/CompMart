@@ -14,7 +14,7 @@
   </ul>
   <hr>
   {% endif %}
-  <form method="post" action="{% url 'commerce:register' %}">
+  <form method="post">
     {% csrf_token %}
     {% for input in form %}
     {% if input.errors %}

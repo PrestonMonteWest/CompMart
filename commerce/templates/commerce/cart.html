@@ -17,7 +17,7 @@
   {% endif %}
 </h2>
 {% if items %}
-<form class="cart" method="post" action="{% url 'commerce:cart' %}">
+<form class="cart" method="post">
   {% csrf_token %}
   <table>
     <tr>

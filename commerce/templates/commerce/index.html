@@ -8,7 +8,7 @@
 
 {% block page_content %}
 <h2>Welcome{% if user.is_authenticated %} {{ user.first_name }}{% endif %}!</h2>
-<form class="search" action="{% url 'index' %}" method="get">
+<form class="search" method="get">
   {% for input in form %}
   {% if input.errors %}
   <ul class="rounded error list">
