@@ -2,7 +2,7 @@
 
 {% block title %}Register today!{% endblock %}
 
-{% block page_content %}
+{% block content %}
 <div class="rounded form">
   <h2>Register</h2>
   <hr>
@@ -34,5 +34,5 @@
     </div>
   </form>
 </div>
-<p>Already have an account? <a href="{% url 'commerce:login' %}">Login here!</a></p>
+<p>Already have an account? <a href="{% url 'account:login' %}">Login here!</a></p>
 {% endblock %}

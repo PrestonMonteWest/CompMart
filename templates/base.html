@@ -25,6 +25,7 @@
 		Logout
 	      </a>
 	    </li>
+	    <li><a href="{% url 'account:index' %}">Account</a></li>
 	    {% if user.is_staff %}
 	    <li><a href="{% url 'admin:index' %}">Admin</a></li>
 	    {% endif %}
