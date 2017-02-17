@@ -1,5 +1,7 @@
 {% extends 'account/account.html' %}
 
 {% block content %}
-index of account
+<ul class="rounded list">
+  <li><a href="{% url 'account:password_change' %}">Change Password</a></li>
+</ul>
 {% endblock %}
