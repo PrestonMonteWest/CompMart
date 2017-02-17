@@ -13,20 +13,13 @@ class Index(ListView):
     page_len = 12
 
     def get_queryset(self):
-        # determine if the request is from a search form submission
-        # if it is, bind it
-        self.search = ProductSearchForm(auto_id=False)
-        for key in self.request.GET:
-            if key in self.search.declared_fields:
-                self.search = ProductSearchForm(
-                    self.request.GET,
-                    auto_id=False
-                )
-
-                break
+        if 'query' in self.request.GET:
+            self.search = ProductSearchForm(self.request.GET, auto_id=False)
+        else:
+            self.search = ProductSearchForm(auto_id=False)
 
         if self.search.is_valid():
-            # emulate keyword searching against database using Q objects
+            # emulate keyword-searching against database using Q objects
             terms = self.search.cleaned_data['query'].split()
             query = Q(name__icontains=terms.pop())
             for term in terms:
@@ -60,6 +53,12 @@ class Index(ListView):
 
         return context
 
+    @classmethod
+    def as_view(cls):
+        view = super().as_view()
+        view.login_required = False
+        return view
+
 class Details(DetailView):
     model = Product
     template_name = 'commerce/product.html'
@@ -70,6 +69,12 @@ class Details(DetailView):
             raise Http404()
 
         return product
+
+    @classmethod
+    def as_view(cls):
+        view = super().as_view()
+        view.login_required = False
+        return view
 
 @require_safe
 def add(request, pk):
@@ -84,6 +89,8 @@ def add(request, pk):
     request.session.modified = True
     url = request.GET.get('next', reverse('index'))
     return redirect(url)
+
+add.login_required = False
 
 @require_http_methods(['HEAD', 'GET', 'POST'])
 def cart(request):
@@ -147,3 +154,5 @@ def cart(request):
     }
 
     return render(request, 'commerce/cart.html', context=context)
+
+cart.login_required = False
