@@ -21,7 +21,7 @@
 	    <li><a href="{% url 'commerce:cart' %}">Cart</a></li>
 	    {% if user.is_authenticated %}
 	    <li>
-	      <a href="{% url 'commerce:logout' %}?next={{ request.path }}">
+	      <a href="{% url 'account:logout' %}?next={{ request.path }}">
 		Logout
 	      </a>
 	    </li>
@@ -29,14 +29,17 @@
 	    <li><a href="{% url 'admin:index' %}">Admin</a></li>
 	    {% endif %}
 	    {% else %}
-	    <li><a href="{% url 'commerce:login' %}">Login</a></li>
-	    <li><a href="{% url 'commerce:register' %}">Register</a></li>
+	    <li><a href="{% url 'account:login' %}">Login</a></li>
+	    <li><a href="{% url 'account:register' %}">Register</a></li>
 	    {% endif %}
 	  </ul>
 	</nav>
       </header>
       <main>
-	{% block content %}{% endblock %}
+	<article>
+	  {% block content %}{% endblock %}
+	</article>
+	{% block extra %}{% endblock %}
       </main>
     </div>
     <footer role="contentinfo">

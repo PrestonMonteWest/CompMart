@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="{% static 'commerce/css/index.css' %}">
 {% endblock %}
 
-{% block page_content %}
+{% block content %}
 <h2>Welcome{% if user.is_authenticated %} {{ user.first_name }}{% endif %}!</h2>
 <form class="search" method="get">
   {% for input in form %}

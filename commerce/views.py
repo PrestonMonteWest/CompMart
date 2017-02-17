@@ -1,23 +1,11 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.views.decorators.http import require_http_methods, require_safe
-from django.contrib import auth
-from django.contrib.auth.forms import UserCreationForm
 from django.http import Http404
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView
 from django.db.models import Q
 from .models import Product
 from .forms import ProductSearchForm
-
-def get_cart(session):
-    '''
-    Given a Django session, if the cart exists return it,
-    otherwise return an empty cart
-    '''
-
-    if 'cart' not in session:
-        session['cart'] = {}
-
-    return session['cart']
+from . import get_cart
 
 class Index(ListView):
     template_name = 'commerce/index.html'
@@ -82,14 +70,6 @@ class Details(DetailView):
             raise Http404()
 
         return product
-
-@require_safe
-def logout(request):
-    cart = get_cart(request.session)
-    auth.logout(request)
-    request.session['cart'] = cart
-    url = request.GET.get('next', reverse('index'))
-    return redirect(url)
 
 @require_safe
 def add(request, pk):
@@ -167,8 +147,3 @@ def cart(request):
     }
 
     return render(request, 'commerce/cart.html', context=context)
-
-class Register(CreateView):
-    template_name = 'commerce/register.html'
-    form_class = UserCreationForm
-    success_url = '/'

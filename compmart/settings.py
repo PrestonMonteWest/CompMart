@@ -19,6 +19,8 @@ SITE_ID = 2
 
 LOGIN_REDIRECT_URL = 'index'
 
+LOGIN_URL = 'account:login'
+
 ADMINS = [('Preston', 'prestonmontewest@gmail.com')]
 
 INTERNAL_IPS = ['127.0.0.1']
@@ -47,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'commerce.apps.CommerceConfig',
+    'account.apps.AccountConfig',
 ]
 
 MIDDLEWARE = [
@@ -75,7 +78,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'commerce.context_processors.metadata',
+                'compmart.context_processors.metadata',
             ],
         },
     },
