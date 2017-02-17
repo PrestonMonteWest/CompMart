@@ -32,12 +32,6 @@ urlpatterns = [
         },
         name='password_change_done'
     ),
-    url(
-        r'^password_change_done/$',
-        views.password_change_done,
-        {'template_name': 'account/password_change_done.html'},
-        name='password_change_done'
-    ),
     url(r'^logout/$', views.logout, name='logout'),
     url(r'^register/$', views.Register.as_view(), name='register'),
 ]

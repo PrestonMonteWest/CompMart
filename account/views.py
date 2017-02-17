@@ -5,15 +5,10 @@ from django.views.decorators.http import require_safe
 from django.core.urlresolvers import resolve, reverse_lazy
 from django.views.generic import CreateView
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.views import (
-    password_change,
-    password_change_done,
-    login
-)
+from django.contrib.auth.views import password_change, login
 from commerce import get_cart
 
 password_change.login_required = True
-password_change_done.login_required = True
 login.login_required = False
 
 @require_safe
