@@ -30,7 +30,11 @@
 	    <li><a href="{% url 'admin:index' %}">Admin</a></li>
 	    {% endif %}
 	    {% else %}
-	    <li><a href="{% url 'account:login' %}">Login</a></li>
+	    <li>
+	      <a href="{% url 'account:login' %}?next={{ request.path }}">
+		Login
+	      </a>
+	    </li>
 	    <li><a href="{% url 'account:register' %}">Register</a></li>
 	    {% endif %}
 	  </ul>

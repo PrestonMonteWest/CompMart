@@ -1,12 +1,14 @@
 from django.shortcuts import reverse, redirect, render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as auth_logout
-from django.views.decorators.http import require_safe
+from django.views.decorators.http import require_safe, require_http_methods
 from django.core.urlresolvers import resolve, reverse_lazy
 from django.views.generic import CreateView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.views import password_change, login
 from commerce import get_cart
+from .forms import AddressForm
+from .models import Address, CreditCard
 
 password_change.login_required = True
 login.login_required = False
@@ -41,3 +43,30 @@ class Register(CreateView):
         view = super().as_view()
         view.login_required = False
         return view
+
+@require_http_methods(['HEAD', 'GET', 'POST'])
+@login_required
+def add_address(request, success=False):
+    if request.method == 'POST':
+        form = AddressForm(request.POST)
+        if form.is_valid():
+            Address.objects.create(user=request.user, **form.cleaned_data)
+            return redirect(reverse('account:add_address_done'))
+    else:
+        form = AddressForm()
+
+    context = {
+        'success': success,
+        'form': form,
+    }
+
+    return render(request, 'account/add_address.html', context=context)
+
+add_address.login_required = True
+
+@require_http_methods(['HEAD', 'GET', 'POST'])
+@login_required
+def view_addresses(request):
+    pass
+
+view_addresses.login_required = True

@@ -32,6 +32,13 @@ urlpatterns = [
         },
         name='password_change_done'
     ),
+    url(r'^add_address/$', views.add_address, name='add_address'),
+    url(
+        r'^add_address_done/$',
+        views.add_address,
+        {'success': True},
+        name='add_address_done'
+    ),
     url(r'^logout/$', views.logout, name='logout'),
     url(r'^register/$', views.Register.as_view(), name='register'),
 ]

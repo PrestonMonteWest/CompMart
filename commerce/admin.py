@@ -29,18 +29,6 @@ class OrderAdmin(admin.ModelAdmin):
     fields = ('street', 'city', 'state', 'zip_code')
     inlines = (OrderItemInline,)
 
-class AddressAdmin(admin.ModelAdmin):
-    list_display = ('user', 'street', 'city', 'state', 'zip_code')
-    fields = ('user', 'street', 'city', 'state', 'zip_code')
-    raw_id_fields = ('user',)
-
-class CreditCardAdmin(admin.ModelAdmin):
-    list_display = ('user', 'card_number', 'holder_name', 'expiration_date')
-    fields = ('user', 'card_number', 'holder_name', 'expiration_date')
-    raw_id_fields = ('user',)
-
 admin.site.register(models.Product, ProductAdmin)
 admin.site.register(models.Review, ReviewAdmin)
-admin.site.register(models.Address, AddressAdmin)
-admin.site.register(models.CreditCard, CreditCardAdmin)
 admin.site.register(models.Order, OrderAdmin)
