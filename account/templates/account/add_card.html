@@ -2,10 +2,10 @@
 
 {% block content %}
 {% if success %}
-<p class="rounded text">Your address was added successfully!</p>
+<p class="rounded text">Your card was added successfully!</p>
 {% endif %}
 <div class="rounded form">
-  <h2>Add Address</h2>
+  <h2>Add Credit Card</h2>
   <hr>
   {% if form.non_field_errors %}
   <ul class="rounded error list">
@@ -15,7 +15,7 @@
   </ul>
   <hr>
   {% endif %}
-  <form method="post" action="{% url 'account:add_address' %}">
+  <form method="post" action="{% url 'account:add_card' %}">
     {% csrf_token %}
     {% for input in form %}
     {% if input.errors %}
@@ -31,7 +31,7 @@
     </div>
     {% endfor %}
     <div>
-      <input class="button" type="submit" value="Add Address">
+      <input class="button" type="submit" value="Add Card">
     </div>
   </form>
 </div>

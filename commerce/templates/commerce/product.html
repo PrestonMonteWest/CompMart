@@ -24,7 +24,7 @@
       {% endif %}
     </p>
     <a class="rounded button"
-       href="{% url 'commerce:add' product.pk %}?next={{ product.get_absolute_url }}">
+       href="{% url 'commerce:add_product' product.pk %}?next={{ product.get_absolute_url }}">
       Add
     </a>
   </div>

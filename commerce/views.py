@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
-from django.views.decorators.http import require_http_methods, require_safe
+from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.views.generic import ListView, DetailView
 from django.db.models import Q
-from .models import Product
 from .forms import ProductSearchForm
+from .models import Product
 from . import get_cart
 
 class Index(ListView):
@@ -76,8 +76,7 @@ class Details(DetailView):
         view.login_required = False
         return view
 
-@require_safe
-def add(request, pk):
+def add_product(request, pk):
     get_object_or_404(Product, pk=pk)
     cart = get_cart(request.session)
 
@@ -90,9 +89,8 @@ def add(request, pk):
     url = request.GET.get('next', reverse('index'))
     return redirect(url)
 
-add.login_required = False
+add_product.login_required = False
 
-@require_http_methods(['HEAD', 'GET', 'POST'])
 def cart(request):
     cart = get_cart(request.session)
 
@@ -156,3 +154,16 @@ def cart(request):
     return render(request, 'commerce/cart.html', context=context)
 
 cart.login_required = False
+
+@login_required
+def checkout(request):
+    cards = request.user.cards.all()
+    if not cards:
+        return redirect('account:add_card')
+    elif request.method == 'POST':
+        # process post data
+        return redirect('commerce:thank_you')
+
+    # display form
+
+checkout.login_required = True

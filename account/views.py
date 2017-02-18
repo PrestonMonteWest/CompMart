@@ -1,27 +1,26 @@
 from django.shortcuts import reverse, redirect, render
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout as auth_logout
-from django.views.decorators.http import require_safe, require_http_methods
 from django.core.urlresolvers import resolve, reverse_lazy
 from django.views.generic import CreateView
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.views import password_change, login
-from commerce import get_cart
-from .forms import AddressForm
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError
+from .forms import AddressForm, CreditCardForm
 from .models import Address, CreditCard
 
+from django.contrib.auth.views import password_change, login
 password_change.login_required = True
 login.login_required = False
 
-@require_safe
 @login_required
 def index(request):
     return render(request, 'account/index.html')
 
 index.login_required = True
 
-@require_safe
 def logout(request):
+    from django.contrib.auth import logout as auth_logout
+    from commerce import get_cart
     cart = get_cart(request.session)
     auth_logout(request)
     request.session['cart'] = cart
@@ -44,14 +43,19 @@ class Register(CreateView):
         view.login_required = False
         return view
 
-@require_http_methods(['HEAD', 'GET', 'POST'])
 @login_required
 def add_address(request, success=False):
     if request.method == 'POST':
         form = AddressForm(request.POST)
         if form.is_valid():
-            Address.objects.create(user=request.user, **form.cleaned_data)
-            return redirect(reverse('account:add_address_done'))
+            try:
+                Address.objects.create(user=request.user, **form.cleaned_data)
+                return redirect(reverse('account:add_address_done'))
+            except IntegrityError:
+                form.add_error(
+                    None,
+                    ValidationError('This address already exists!')
+                )
     else:
         form = AddressForm()
 
@@ -64,7 +68,31 @@ def add_address(request, success=False):
 
 add_address.login_required = True
 
-@require_http_methods(['HEAD', 'GET', 'POST'])
+@login_required
+def add_card(request, success=False):
+    if request.method == 'POST':
+        form = CreditCardForm(request.POST)
+        if form.is_valid():
+            try:
+                CreditCard.objects.create(user=request.user, **form.cleaned_data)
+                return redirect(reverse('account:add_card_done'))
+            except IntegrityError:
+                form.add_error(
+                    None,
+                    ValidationError('This credit card already exists!')
+                )
+    else:
+        form = CreditCardForm()
+
+    context = {
+        'success': success,
+        'form': form,
+    }
+
+    return render(request, 'account/add_card.html', context=context)
+
+add_card.login_required = True
+
 @login_required
 def view_addresses(request):
     pass

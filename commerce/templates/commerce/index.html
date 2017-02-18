@@ -47,7 +47,7 @@
     <p>
       {{ product.description|default:"<i>No Description</i>"|truncatewords:15 }}
     </p>
-    <a class="rounded button" href="{% url 'commerce:add' product.id %}">Add</a>
+    <a class="rounded button" href="{% url 'commerce:add_product' product.id %}">Add</a>
   </div>
   {% endfor %}
 </div>

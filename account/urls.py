@@ -39,6 +39,13 @@ urlpatterns = [
         {'success': True},
         name='add_address_done'
     ),
+    url(r'^add_card/$', views.add_card, name='add_card'),
+    url(
+        r'^add_card_done/$',
+        views.add_card,
+        {'success': True},
+        name='add_card_done'
+    ),
     url(r'^logout/$', views.logout, name='logout'),
     url(r'^register/$', views.Register.as_view(), name='register'),
 ]
