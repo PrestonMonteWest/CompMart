@@ -1,38 +1,11 @@
-{% extends 'account/account.html' %}
+{% extends 'account/form.html' %}
 
 {% block title %}Register today!{% endblock %}
 
-{% block content %}
-<div class="rounded form">
-  <h2>Register</h2>
-  <hr>
-  {% if form.non_field_errors %}
-  <ul class="rounded error list">
-    {% for error in form.non_field_errors %}
-    <li>{{ error }}</li>
-    {% endfor %}
-  </ul>
-  <hr>
-  {% endif %}
-  <form method="post">
-    {% csrf_token %}
-    {% for input in form %}
-    {% if input.errors %}
-    <ul class="error list">
-      {% for error in input.errors %}
-      <li>{{ error }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-    <div>
-      {{ input.label_tag }}
-      {{ input }}
-    </div>
-    {% endfor %}
-    <div>
-      <input class="button" type="submit" value="Register">
-    </div>
-  </form>
-</div>
+{% block heading %}Register{% endblock %}
+
+{% block button %}Register{% endblock %}
+
+{% block bottom %}
 <p>Already have an account? <a href="{% url 'account:login' %}">Login here!</a></p>
 {% endblock %}

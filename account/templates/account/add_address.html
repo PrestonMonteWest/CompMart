@@ -1,38 +1,9 @@
-{% extends 'account/account.html' %}
+{% extends 'account/form.html' %}
 
-{% block content %}
-{% if success %}
-<p class="rounded text">Your address was added successfully!</p>
-{% endif %}
-<div class="rounded form">
-  <h2>Add Address</h2>
-  <hr>
-  {% if form.non_field_errors %}
-  <ul class="rounded error list">
-    {% for error in form.non_field_errors %}
-    <li>{{ error }}</li>
-    {% endfor %}
-  </ul>
-  <hr>
-  {% endif %}
-  <form method="post" action="{% url 'account:add_address' %}">
-    {% csrf_token %}
-    {% for input in form %}
-    {% if input.errors %}
-    <ul class="error list">
-      {% for error in input.errors %}
-      <li>{{ error }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %}
-    <div>
-      {{ input.label_tag }}
-      {{ input }}
-    </div>
-    {% endfor %}
-    <div>
-      <input class="button" type="submit" value="Add Address">
-    </div>
-  </form>
-</div>
-{% endblock %}
+{% block title %}Add Address{% endblock %}
+
+{% block heading %}Add Address{% endblock %}
+
+{% block action %}action="{% url 'account:add_address' %}"{% endblock %}
+
+{% block button %}Add Address{% endblock %}
