@@ -2,7 +2,8 @@ from django.shortcuts import reverse, redirect, render
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.core.urlresolvers import resolve, reverse_lazy
-from django.views.generic import CreateView, ListView
+from django.http import Http404
+from django.views.generic import CreateView, ListView, DetailView
 from django.contrib.auth.forms import UserCreationForm
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
@@ -15,8 +16,10 @@ login.login_required = False
 
 @login_required
 def index(request):
-    address_count = Address.objects.count()
-    card_count = CreditCard.objects.count()
+    address_count = request.user.addresses.count()
+    card_count = request.user.cards.count()
+    order_count = request.user.orders.count()
+    review_count = request.user.reviews.count()
     links = []
     if address_count:
         links.append({
@@ -38,6 +41,18 @@ def index(request):
         links.append({
             'name': 'Add Card',
             'href': reverse('account:add_card'),
+        })
+
+    if order_count:
+        links.append({
+            'name': 'Orders',
+            'href': reverse('account:orders'),
+        })
+
+    if review_count:
+        links.append({
+            'name': 'Reviews',
+            'href': reverse('account:reviews'),
         })
 
     return render(request, 'account/index.html', {'links': links})
@@ -133,12 +148,27 @@ def delete_card(request, pk):
 
 delete_card.login_required = True
 
+@login_required
+def edit_review(request, pk):
+    pass
+
+edit_review.login_required = True
+
+@login_required
+def delete_review(request, pk):
+    pass
+
+delete_review.login_required = True
+
 class AddressList(ListView):
     template_name = 'account/addresses.html'
-    context_object_name = 'addresses'
 
     def get_queryset(self):
-        return self.request.user.addresses.all()
+        query = self.request.user.addresses.all()
+        if not query:
+            raise Http404()
+
+        return query
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
@@ -152,10 +182,73 @@ class AddressList(ListView):
 
 class CardList(ListView):
     template_name = 'account/cards.html'
-    context_object_name = 'cards'
 
     def get_queryset(self):
-        return self.request.user.cards.all()
+        query = self.request.user.cards.all()
+        if not query:
+            raise Http404()
+
+        return query
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    @classmethod
+    def as_view(cls):
+        view = super().as_view()
+        view.login_required = True
+        return view
+
+class OrderList(ListView):
+    template_name = 'account/orders.html'
+
+    def get_queryset(self):
+        query = self.request.user.orders.all()
+        if not query:
+            raise Http404()
+
+        return query
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    @classmethod
+    def as_view(cls):
+        view = super().as_view()
+        view.login_required = True
+        return view
+
+class OrderDetails(DetailView):
+    template_name = 'account/order.html'
+
+    def get_queryset(self):
+        query = self.request.user.orders.all()
+        if not query:
+            raise Http404()
+
+        return query
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    @classmethod
+    def as_view(cls):
+        view = super().as_view()
+        view.login_required = True
+        return view
+
+class ReviewList(ListView):
+    template_name = 'account/reviews.html'
+
+    def get_queryset(self):
+        query = self.request.user.reviews.all()
+        if not query:
+            raise Http404()
+
+        return query
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):

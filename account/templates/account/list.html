@@ -1,0 +1,12 @@
+{% extends 'account/account.html' %}
+
+{% block content %}
+<h2>{% block heading %}{% endblock %}</h2>
+<ul class="rounded list">
+  {% block top %}{% endblock %}
+  {% for object in object_list %}
+  <li>{% block item %}{% endblock %}</li>
+  {% endfor %}
+  {% block bottom %}{% endblock %}
+</ul>
+{% endblock %}

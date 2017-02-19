@@ -59,7 +59,7 @@ class Index(ListView):
         view.login_required = False
         return view
 
-class Details(DetailView):
+class ProductDetails(DetailView):
     model = Product
     template_name = 'commerce/product.html'
 

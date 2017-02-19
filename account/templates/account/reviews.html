@@ -1,0 +1,13 @@
+{% extends 'account/list.html' %}
+
+{% block title %}Reviews{% endblock %}
+
+{% block heading %}Reviews{% endblock %}
+
+{% block item %}
+<div>{{ object }}</div>
+<div>
+  <a href="{% url 'account:edit_review' object.pk %}">edit</a> |
+  <a href="{% url 'account:delete_review' object.pk %}">delete</a>
+</div>
+{% endblock %}
