@@ -1,0 +1,21 @@
+{% extends 'account/account.html' %}
+
+{% block title %}Addresses{% endblock %}
+
+{% block content %}
+<h2>Addresses</h2>
+<ul class="rounded list">
+  {% for address in addresses %}
+  <li>
+    <div>{{ address|upper }}</div>
+    <div>
+      <a href="{% url 'account:edit_address' address.pk %}">edit</a> |
+      <a href="{% url 'account:delete_address' address.pk %}">delete</a>
+    </div>
+  </li>
+  {% empty %}
+  <li>You have no addresses. Click the link below to add one.</li>
+  {% endfor %}
+  <li><a href="{% url 'account:add_address' %}">Add Address</a></li>
+</ul>
+{% endblock %}

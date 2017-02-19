@@ -83,8 +83,7 @@ class Address(AddressBase):
     )
 
     def __str__(self):
-        return '{} - {}, {}, {} {}'.format(
-            self.user.username,
+        return '{}, {}, {} {}'.format(
             self.street,
             self.city,
             self.state,

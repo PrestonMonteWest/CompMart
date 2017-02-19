@@ -1,0 +1,21 @@
+{% extends 'account/account.html' %}
+
+{% block title %}Credit Cards{% endblock %}
+
+{% block content %}
+<h2>Credit Cards</h2>
+<ul class="rounded list">
+  {% for card in cards %}
+  <li>
+    <div>{{ card }}</div>
+    <div>
+      <a href="{% url 'account:edit_card' address.pk %}">edit</a> |
+      <a href="{% url 'account:delete_card' address.pk %}">delete</a>
+    </div>
+  </li>
+  {% empty %}
+  <li>You have no cards. Click the link below to add one.</li>
+  {% endfor %}
+  <li><a href="{% url 'account:add_card' %}">Add Card</a></li>
+</ul>
+{% endblock %}
