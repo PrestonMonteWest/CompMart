@@ -16,14 +16,14 @@
   <form method="post" {% block action %}{% endblock %}>
     {% csrf_token %}
     {% for input in form %}
-    {% if input.errors %}
-    <ul class="rounded error list">
-      {% for error in input.errors %}
-      <li>{{ error }}</li>
-      {% endfor %}
-    </ul>
-    {% endif %}
     <div>
+      {% if input.errors %}
+      <ul class="rounded error list">
+	{% for error in input.errors %}
+	<li>{{ error }}</li>
+	{% endfor %}
+      </ul>
+      {% endif %}
       {{ input.label_tag }}
       {{ input }}
     </div>
