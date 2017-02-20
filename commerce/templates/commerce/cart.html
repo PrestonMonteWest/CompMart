@@ -32,12 +32,14 @@
 	${{ item.product.price }}
       </td>
       <td>
-	<input type="number" name="update.{{ item.product.id }}" min="1"
+	<input type="number" name="{{ item.product.pk }}" min="1"
 	       value="{{ item.quantity }}">
       </td>
       <td>
-	<input class="button" type="submit" name="{{ item.product.id }}"
-	       value="Delete">
+	<a class="rounded button"
+	   href="{% url 'commerce:delete_product' item.product.pk %}?next={{ request.path }}">
+	  Delete
+	</a>
       </td>
     </tr>
     {% endfor %}

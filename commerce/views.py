@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.views.generic import ListView, DetailView
 from django.db.models import Q
+from account import login_required
 from .forms import ProductSearchForm
 from .models import Product
 from . import get_cart
@@ -53,12 +53,6 @@ class Index(ListView):
 
         return context
 
-    @classmethod
-    def as_view(cls):
-        view = super().as_view()
-        view.login_required = False
-        return view
-
 class ProductDetails(DetailView):
     model = Product
     template_name = 'commerce/product.html'
@@ -69,12 +63,6 @@ class ProductDetails(DetailView):
             raise Http404()
 
         return product
-
-    @classmethod
-    def as_view(cls):
-        view = super().as_view()
-        view.login_required = False
-        return view
 
 def add_product(request, pk):
     get_object_or_404(Product, pk=pk)
@@ -89,48 +77,34 @@ def add_product(request, pk):
     url = request.GET.get('next', reverse('index'))
     return redirect(url)
 
-add_product.login_required = False
+def delete_product(request, pk):
+    cart = get_cart(request.session)
+    if pk in cart:
+        del cart[pk]
+
+    request.session.modified = True
+    url = request.GET.get('next', reverse('index'))
+    return redirect(url)
 
 def cart(request):
     cart = get_cart(request.session)
-
     if request.method == 'POST':
-        post = request.POST.copy()
-        keys = []
-        for key, value in post.items():
-            if 'update' in key:
-                try:
-                    pk = key.split('.')[-1]
-                    value = int(value)
-
-                    if value >= 1:
-                        cart[pk] = value
-                        request.session.modified = True
-
-                except (KeyError, ValueError):
-                    pass
-
-                keys.append(key)
-
-        for key in keys:
-            del post[key]
-
-        if 'checkout' in post:
-            return redirect(reverse('commerce:checkout'))
-
-        for key, value in post.items():
-            if value == 'Delete':
-                try:
-                    del cart[key]
-                except ValueError:
-                    pass
-                else:
+        for key, value in request.POST.items():
+            try:
+                pk = key
+                value = int(value)
+                if value >= 1:
+                    cart[pk] = value
                     request.session.modified = True
-                    break
+
+            except (KeyError, ValueError):
+                pass
+
+        if 'checkout' in request.POST:
+            return redirect(reverse('commerce:checkout'))
 
     items = []
     total = 0
-
     for pk in sorted(cart):
         try:
             product = Product.active_objects.get(pk=pk)
@@ -151,9 +125,7 @@ def cart(request):
         'items': items,
     }
 
-    return render(request, 'commerce/cart.html', context=context)
-
-cart.login_required = False
+    return render(request, 'commerce/cart.html', context)
 
 @login_required
 def checkout(request):
@@ -165,5 +137,3 @@ def checkout(request):
         return redirect('commerce:thank_you')
 
     # display form
-
-checkout.login_required = True
