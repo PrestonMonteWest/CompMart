@@ -108,16 +108,8 @@ def add_card(request):
     if request.method == 'POST':
         form = CreditCardForm(request.POST)
         if form.is_valid():
-            card_number = form.cleaned_data['card_number']
-            del form.cleaned_data['card_number']
-            # encrypt card number
             try:
-                CreditCard.objects.create(
-                    user=request.user,
-                    card_number=card_number,
-                    **form.cleaned_data
-                )
-
+                CreditCard.objects.create(user=request.user, **form.cleaned_data)
                 return redirect(reverse('account:cards'))
             except IntegrityError:
                 form.add_error(

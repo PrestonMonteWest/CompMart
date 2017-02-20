@@ -33,6 +33,10 @@ class CreditCardForm(forms.ModelForm):
     def get_card_type(card_number):
         if card_number[0] == '4':
             return 'Visa'
+        elif card_number[:2] in ('34', '37'):
+            return 'American Express'
+        elif card_number[:2] in ('51', '52', '53', '54', '55'):
+            return 'MasterCard'
         else:
             raise forms.ValidationError('Unsupported card type entered.')
 

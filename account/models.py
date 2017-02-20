@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from fernet_fields import EncryptedTextField
 
 class AddressBase(models.Model):
     class Meta:
@@ -99,7 +100,7 @@ class CreditCard(models.Model):
         models.CASCADE,
         related_name='cards'
     )
-    card_number = models.CharField(max_length=16)
+    card_number = EncryptedTextField()
     card_type = models.CharField(max_length=20)
     holder_name = models.CharField(max_length=50)
     expiration_date = models.DateField()
