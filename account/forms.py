@@ -38,7 +38,7 @@ class CreditCardForm(forms.ModelForm):
         elif card_number[:2] in ('51', '52', '53', '54', '55'):
             return 'MasterCard'
         else:
-            raise forms.ValidationError('Unsupported card type entered.')
+            raise forms.ValidationError('Unsupported card entered.')
 
     def clean_card_number(self):
         card_number = self.cleaned_data['card_number']

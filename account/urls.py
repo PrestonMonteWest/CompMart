@@ -14,7 +14,7 @@ addresses = [
     ),
     url(
         r'^delete_address/(?P<pk>[1-9]\d*)/$',
-        views.delete_address,
+        views.DeleteAddress.as_view(),
         name='delete_address'
     ),
 ]
@@ -23,7 +23,11 @@ cards = [
     url(r'^$', views.CardList.as_view(), name='cards'),
     url(r'^add_card/$', views.add_card, name='add_card'),
     url(r'^edit_card/(?P<pk>[1-9]\d*)/$', views.edit_card, name='edit_card'),
-    url(r'^delete_card/(?P<pk>[1-9]\d*)/$', views.delete_card, name='delete_card'),
+    url(
+        r'^delete_card/(?P<pk>[1-9]\d*)/$',
+        views.DeleteCard.as_view(),
+        name='delete_card'
+    ),
 ]
 
 orders = [
@@ -34,7 +38,11 @@ orders = [
 reviews = [
     url(r'^$', views.ReviewList.as_view(), name='reviews'),
     url(r'^edit_review/(?P<pk>[1-9]\d*)/$', views.edit_review, name='edit_review'),
-    url(r'^delete_review/(?P<pk>[1-9]\d*)/$', views.delete_review, name='delete_review'),
+    url(
+        r'^delete_review/(?P<pk>[1-9]\d*)/$',
+        views.DeleteReview.as_view(),
+        name='delete_review'
+    ),
 ]
 
 urlpatterns = [

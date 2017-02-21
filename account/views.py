@@ -3,7 +3,7 @@ from django.utils.decorators import method_decorator
 from django.core.urlresolvers import resolve, reverse_lazy
 from django.http import Http404
 from django.contrib.auth.views import password_change, login
-from django.views.generic import CreateView, ListView, DetailView
+from django.views import generic
 from django.contrib.auth.forms import UserCreationForm
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
@@ -72,7 +72,7 @@ def logout(request):
 
     return redirect(url)
 
-class Register(CreateView):
+class Register(generic.CreateView):
     template_name = 'account/register.html'
     form_class = UserCreationForm
     success_url = reverse_lazy('index')
@@ -99,9 +99,26 @@ def add_address(request):
 def edit_address(request, pk):
     pass
 
-@login_required
-def delete_address(request, pk):
-    pass
+class DeleteAddress(generic.DeleteView):
+    template_name = 'account/delete_address.html'
+
+    def get_queryset(self):
+        return self.request.user.addresses.all()
+
+    def delete(self, request, *args, **kwargs):
+        self.get_object().delete()
+        address_count = request.user.addresses.count()
+
+        if address_count:
+            url = reverse('account:reviews')
+        else:
+            url = reverse('account:index')
+
+        return redirect(url)
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 @login_required
 def add_card(request):
@@ -125,19 +142,53 @@ def add_card(request):
 def edit_card(request, pk):
     pass
 
-@login_required
-def delete_card(request, pk):
-    pass
+class DeleteCard(generic.DeleteView):
+    template_name = 'account/delete_card.html'
+
+    def get_queryset(self):
+        return self.request.user.cards.all()
+
+    def delete(self, request, *args, **kwargs):
+        self.get_object().delete()
+        card_count = request.user.cards.count()
+
+        if card_count:
+            url = reverse('account:cards')
+        else:
+            url = reverse('account:index')
+
+        return redirect(url)
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 @login_required
 def edit_review(request, pk):
     pass
 
-@login_required
-def delete_review(request, pk):
-    pass
+class DeleteReview(generic.DeleteView):
+    template_name = 'account/delete_review.html'
 
-class AddressList(ListView):
+    def get_queryset(self):
+        return self.request.user.reviews.all()
+
+    def delete(self, request, *args, **kwargs):
+        self.get_object().delete()
+        review_count = request.user.reviews.count()
+
+        if review_count:
+            url = reverse('account:reviews')
+        else:
+            url = reverse('account:index')
+
+        return redirect(url)
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+class AddressList(generic.ListView):
     template_name = 'account/addresses.html'
 
     def get_queryset(self):
@@ -151,7 +202,7 @@ class AddressList(ListView):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
-class CardList(ListView):
+class CardList(generic.ListView):
     template_name = 'account/cards.html'
 
     def get_queryset(self):
@@ -165,7 +216,7 @@ class CardList(ListView):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
-class OrderList(ListView):
+class OrderList(generic.ListView):
     template_name = 'account/orders.html'
 
     def get_queryset(self):
@@ -179,7 +230,7 @@ class OrderList(ListView):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
-class OrderDetails(DetailView):
+class OrderDetails(generic.DetailView):
     template_name = 'account/order.html'
 
     def get_queryset(self):
@@ -193,7 +244,7 @@ class OrderDetails(DetailView):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
-class ReviewList(ListView):
+class ReviewList(generic.ListView):
     template_name = 'account/reviews.html'
 
     def get_queryset(self):

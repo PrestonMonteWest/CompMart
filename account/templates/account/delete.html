@@ -1,0 +1,10 @@
+{% extends 'account/account.html' %}
+
+{% block content %}
+<h2>{% block heading %}{% endblock %}</h2>
+<form method="post">
+  {% csrf_token %}
+  <p class="rounded text">{% block message %}{% endblock %}</p>
+  <input class="button" type="submit" value="Delete">
+</form>
+{% endblock %}
