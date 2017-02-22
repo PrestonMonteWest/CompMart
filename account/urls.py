@@ -32,7 +32,7 @@ cards = [
 
 orders = [
     url(r'^$', views.OrderList.as_view(), name='orders'),
-    url(r'^(?P<pk>[1-9]\d*)/$', views.OrderDetails.as_view(), name='order'),
+    url(r'^order/(?P<pk>[1-9]\d*)/$', views.OrderDetails.as_view(), name='order'),
 ]
 
 reviews = [

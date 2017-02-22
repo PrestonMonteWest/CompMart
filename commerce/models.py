@@ -75,8 +75,14 @@ class Order(AddressBase):
         models.CASCADE,
         related_name='orders'
     )
-    total = models.DecimalField(max_digits=7, decimal_places=2)
     purchase_date = models.DateTimeField(default=timezone.now)
+
+    @property
+    def total(self):
+        return 0
+
+    def get_absolute_url(self):
+        return reverse('account:order', args=(self.pk,))
 
     def __str__(self):
         return '{}, {}'.format(self.user, self.purchase_date)

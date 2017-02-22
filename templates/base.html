@@ -18,7 +18,11 @@
 	<nav>
 	  <ul>
 	    <li><a href="{% url 'index' %}">Home</a></li>
-	    <li><a href="{% url 'commerce:cart' %}">Cart</a></li>
+	    <li>
+	      <a href="{% url 'commerce:cart' %}">
+		Cart
+	      </a>
+	    </li>
 	    {% if user.is_authenticated %}
 	    <li>
 	      <a href="{% url 'account:logout' %}?next={{ request.path }}">

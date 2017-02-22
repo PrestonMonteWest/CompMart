@@ -1,8 +1,8 @@
 /* input fields */
 
-input:not([type="submit"]) {width: 100%;}
+input[type="text"], input[type="password"] {width: 100%;}
 
-input:not([type="submit"]):focus {box-shadow: 0 0 0 1px grey;}
+input:not([type="submit"]):not([type="radio"]):focus {box-shadow: 0 0 0 1px grey;}
 
 /* input fields end */
 /* classes */
@@ -20,8 +20,14 @@ input:not([type="submit"]):focus {box-shadow: 0 0 0 1px grey;}
 .form div:not(:last-child) {text-align: left;}
 
 .form label {
-    padding: 5px 0;
     display: block;
+    padding-bottom: 5px;
 }
+
+.form ul {
+    margin: 0;
+}
+
+.form ul label {padding-bottom: 0;}
 
 /* classes end */

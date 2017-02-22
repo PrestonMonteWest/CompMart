@@ -84,11 +84,11 @@ class Address(AddressBase):
     )
 
     def __str__(self):
-        return '{}, {}, {} {}'.format(
-            self.street,
-            self.city,
-            self.state,
-            self.zip_code
+        return '{street}, {city}, {state} {zip_code}'.format(
+            street=self.street,
+            city=self.city,
+            state=self.state,
+            zip_code=self.zip_code
         )
 
 class CreditCard(models.Model):
@@ -106,4 +106,8 @@ class CreditCard(models.Model):
     expiration_date = models.DateField()
 
     def __str__(self):
-        return '{} - {}'.format(self.card_type, self.holder_name)
+        return '{card_type} ending in {last_four} - {name}'.format(
+            card_type=self.card_type,
+            last_four=self.card_number[-4:],
+            name=self.holder_name
+        )

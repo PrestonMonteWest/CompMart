@@ -21,4 +21,5 @@ urlpatterns = [
     ),
     url(r'^cart/$', views.cart, name='cart'),
     url(r'^checkout/$', views.checkout, name='checkout'),
+    url(r'^thank_you/(?P<pk>[1-9]\d*)/$', views.thank_you, name='thank_you'),
 ]

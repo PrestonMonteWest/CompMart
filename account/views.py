@@ -79,19 +79,19 @@ class Register(generic.CreateView):
 
 @login_required
 def add_address(request):
-    if request.method == 'POST':
-        form = AddressForm(request.POST)
-        if form.is_valid():
-            try:
-                Address.objects.create(user=request.user, **form.cleaned_data)
-                return redirect(reverse('account:addresses'))
-            except IntegrityError:
-                form.add_error(
-                    None,
-                    ValidationError('This address already exists.')
-                )
-    else:
-        form = AddressForm()
+    form = AddressForm(request.POST or None)
+    if form.is_valid():
+        try:
+            Address.objects.create(user=request.user, **form.cleaned_data)
+            if 'next' in request.GET:
+                return redirect(request.GET['next'])
+
+            return redirect(reverse('account:addresses'))
+        except IntegrityError:
+            form.add_error(
+                None,
+                ValidationError('This address already exists.')
+            )
 
     return render(request, 'account/add_address.html', {'form': form})
 
@@ -122,19 +122,19 @@ class DeleteAddress(generic.DeleteView):
 
 @login_required
 def add_card(request):
-    if request.method == 'POST':
-        form = CreditCardForm(request.POST)
-        if form.is_valid():
-            try:
-                CreditCard.objects.create(user=request.user, **form.cleaned_data)
-                return redirect(reverse('account:cards'))
-            except IntegrityError:
-                form.add_error(
-                    None,
-                    ValidationError('This credit card already exists.')
-                )
-    else:
-        form = CreditCardForm()
+    form = CreditCardForm(request.POST or None)
+    if form.is_valid():
+        try:
+            CreditCard.objects.create(user=request.user, **form.cleaned_data)
+            if 'next' in request.GET:
+                return redirect(request.GET['next'])
+
+            return redirect(reverse('account:cards'))
+        except IntegrityError:
+            form.add_error(
+                None,
+                ValidationError('This credit card already exists.')
+            )
 
     return render(request, 'account/add_card.html', {'form': form})
 

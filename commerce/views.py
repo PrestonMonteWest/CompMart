@@ -3,8 +3,8 @@ from django.http import Http404
 from django.views.generic import ListView, DetailView
 from django.db.models import Q
 from account import login_required
-from .forms import ProductSearchForm
-from .models import Product
+from .forms import ProductSearchForm, CheckoutForm
+from .models import Product, OrderItem, Order
 from . import get_cart
 
 class Index(ListView):
@@ -129,11 +129,67 @@ def cart(request):
 
 @login_required
 def checkout(request):
+    cart = get_cart(request.session)
+    if not cart:
+        return redirect(reverse('index'))
+
     cards = request.user.cards.all()
     if not cards:
-        return redirect('account:add_card')
-    elif request.method == 'POST':
-        # process post data
-        return redirect('commerce:thank_you')
+        return redirect('{}?next={}'.format(
+            reverse('account:add_card'),
+            request.path
+        ))
 
-    # display form
+    addresses = request.user.addresses.all()
+    if not addresses:
+        return redirect('{}?next={}'.format(
+            reverse('account:add_address'),
+            request.path
+        ))
+
+    form = CheckoutForm(request.POST or None, cards=cards, addresses=addresses)
+    if form.is_valid():
+        order = Order.objects.create(user=request.user)
+        for pk, quantity in cart.items():
+            try:
+                product = Product.objects.get(pk=pk)
+            except Product.DoesNotExist:
+                del cart[pk]
+                request.session.modified = True
+                form.add_error(
+                    None,
+                    ValidationError(
+                        'A product in your cart has been deleted from our database. '
+                        'We are sorry for the inconvience.'
+                    )
+                )
+                break
+
+            if product.discontinued:
+                form.add_error(
+                    None,
+                    ValidationError(
+                        '{product} has been discontinued. '.format(product) +
+                        'We are sorry for the inconvience.'
+                    )
+                )
+                break
+
+            if not product.in_stock:
+                form.add_error(
+                    None,
+                    ValidationError(
+                        '{product} is now out of stock. '.format(product) +
+                        'We are sorry for the inconvience.'
+                    )
+                )
+                break
+
+        if not form.errors:
+            return redirect(reverse('commerce:thank_you', args=(order.pk,)))
+
+    return render(request, 'commerce/checkout.html', {'form': form})
+
+@login_required
+def thank_you(request, pk):
+    pass
