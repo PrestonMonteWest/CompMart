@@ -7,6 +7,44 @@ from .forms import ProductSearchForm, CheckoutForm
 from .models import Product, OrderItem, Order
 from . import get_cart
 
+def check_cart(session):
+    cart = get_cart(session)
+    errors = []
+    for pk in cart:
+        try:
+            Product.objects.get(pk=pk)
+        except Product.DoesNotExist:
+            del cart[pk]
+            session.modified = True
+            errors.append(
+                ValidationError(
+                    'A product in your cart has been deleted from our database.'
+                )
+            )
+        else:
+            if product.discontinued:
+                del cart[pk]
+                session.modified = True
+                errors.append(
+                    ValidationError(
+                        '{product} has been discontinued.'.format(
+                            product=product
+                        )
+                    )
+                )
+            elif not product.in_stock:
+                del cart[pk]
+                session.modified = True
+                errors.append(
+                    ValidationError(
+                        '{product} is now out of stock.'.format(
+                            product=product
+                        )
+                    )
+                )
+
+    return errors
+
 class Index(ListView):
     template_name = 'commerce/index.html'
     context_object_name = 'products'
@@ -148,45 +186,30 @@ def checkout(request):
         ))
 
     form = CheckoutForm(request.POST or None, cards=cards, addresses=addresses)
+    for error in check_cart(request.session):
+        form.add_error(None, error)
+
     if form.is_valid():
-        order = Order.objects.create(user=request.user)
+        order = Order(user=request.user)
+        items = []
+        total = 0
         for pk, quantity in cart.items():
-            try:
-                product = Product.objects.get(pk=pk)
-            except Product.DoesNotExist:
-                del cart[pk]
-                request.session.modified = True
-                form.add_error(
-                    None,
-                    ValidationError(
-                        'A product in your cart has been deleted from our database. '
-                        'We are sorry for the inconvience.'
-                    )
-                )
-                break
+            product = Product.objects.get(pk=pk)
 
-            if product.discontinued:
-                form.add_error(
-                    None,
-                    ValidationError(
-                        '{product} has been discontinued. '.format(product) +
-                        'We are sorry for the inconvience.'
-                    )
-                )
-                break
+            items.append(OrderItem(
+                product=product,
+                order=order,
+                price=product.price,
+                quantity=quantity
+            ))
+            total += product.price
 
-            if not product.in_stock:
-                form.add_error(
-                    None,
-                    ValidationError(
-                        '{product} is now out of stock. '.format(product) +
-                        'We are sorry for the inconvience.'
-                    )
-                )
-                break
+        order.total = total
+        order.save()
+        for item in items:
+            item.save()
 
-        if not form.errors:
-            return redirect(reverse('commerce:thank_you', args=(order.pk,)))
+        return redirect(reverse('commerce:thank_you', args=(order.pk,)))
 
     return render(request, 'commerce/checkout.html', {'form': form})
 
