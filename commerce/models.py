@@ -1,8 +1,11 @@
+from threading import Lock
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.urls import reverse
 from account.models import AddressBase
+
+mutex = Lock()
 
 class ActiveProductManager(models.Manager):
     def get_queryset(self):
@@ -98,3 +101,13 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return '{}, {}'.format(self.order, self.product)
+
+    def save(self, *args, **kwargs):
+        mutex.acquire()
+        if self.product.stock > self.quantity:
+            self.product.stock -= quantity
+            self.product.save()
+            super().save(*args, **kwargs)
+        else:
+            raise ValueError('%s is out of stock!' % self.product)
+        mutex.release()
