@@ -4,10 +4,9 @@ from django.core.urlresolvers import resolve, reverse_lazy
 from django.http import Http404
 from django.contrib.auth.views import password_change, login
 from django.views import generic
-from django.contrib.auth.forms import UserCreationForm
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
-from .forms import AddressForm, CreditCardForm
+from . import forms
 from .models import Address, CreditCard
 from . import login_required
 
@@ -74,12 +73,12 @@ def logout(request):
 
 class Register(generic.CreateView):
     template_name = 'account/register.html'
-    form_class = UserCreationForm
+    form_class = forms.MyUserCreationForm
     success_url = reverse_lazy('index')
 
 @login_required
 def add_address(request):
-    form = AddressForm(request.POST or None)
+    form = forms.AddressForm(request.POST or None)
     if form.is_valid():
         try:
             Address.objects.create(user=request.user, **form.cleaned_data)
@@ -122,7 +121,7 @@ class DeleteAddress(generic.DeleteView):
 
 @login_required
 def add_card(request):
-    form = CreditCardForm(request.POST or None)
+    form = forms.CreditCardForm(request.POST or None)
     if form.is_valid():
         try:
             CreditCard.objects.create(user=request.user, **form.cleaned_data)

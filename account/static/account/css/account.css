@@ -1,6 +1,6 @@
 /* input fields */
 
-input[type="text"], input[type="password"] {width: 100%;}
+input:not([type="submit"]):not([type="radio"]) {width: 100%;}
 
 input:not([type="submit"]):not([type="radio"]):focus {box-shadow: 0 0 0 1px grey;}
 
