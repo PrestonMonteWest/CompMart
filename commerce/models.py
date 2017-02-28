@@ -35,12 +35,12 @@ class Product(models.Model):
     @property
     def purchase_count(self):
         from django.db.models import Sum
-        return self.orderitem_set.aggregate(Sum('quantity'))['quantity__sum']
+        return self.orderitem_set.aggregate(Sum('quantity'))['quantity__sum'] or 0
 
     @property
     def rating(self):
         from django.db.models import Avg
-        return round(self.reviews.aggregate(Avg('rating'))['rating__avg'])
+        return round(self.reviews.aggregate(Avg('rating'))['rating__avg'] or 0)
 
     @property
     def in_stock(self):
@@ -104,8 +104,8 @@ class OrderItem(models.Model):
 
     def save(self, *args, **kwargs):
         mutex.acquire()
-        if self.product.stock > self.quantity:
-            self.product.stock -= quantity
+        if self.product.stock >= self.quantity:
+            self.product.stock -= self.quantity
             self.product.save()
             super().save(*args, **kwargs)
         else:
