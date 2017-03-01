@@ -1,8 +1,8 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from . import models
+from .. import models
 
-class ProductPropertyTests(TestCase):
+class ProductTests(TestCase):
     def setUp(self):
         user_1 = User.objects.create_user(
             username='JulianoBrawno',

@@ -19,6 +19,8 @@ LOGIN_REDIRECT_URL = 'index'
 
 LOGIN_URL = 'account:login'
 
+SITE_ID = 2
+
 ADMINS = [('Preston', 'prestonmontewest@gmail.com')]
 
 INTERNAL_IPS = ['127.0.0.1']
@@ -97,10 +99,6 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5432',
     },
-    'sqlite': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'compmart'),
-    }
 }
 
 
