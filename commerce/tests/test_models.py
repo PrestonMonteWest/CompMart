@@ -5,28 +5,28 @@ from .. import models
 class ProductTests(TestCase):
     def setUp(self):
         user_1 = User.objects.create_user(
-            username='JulianoBrawno',
-            password='fdsa4321asdf1234',
+            username='user_1',
+            password='password_1',
         )
         user_2 = User.objects.create_user(
-            username='MarkyMark',
-            password='password',
+            username='user_2',
+            password='password_2',
         )
         product_1 = models.Product.objects.create(
             id=1,
-            name='Network Adapter',
+            name='product_1',
             price='29.99',
             stock=3,
-            description='Amazing Deal',
-            image='net_adapter.jpg',
+            description='',
+            image='product_1.jpg',
         )
         product_2 = models.Product.objects.create(
             id=2,
-            name='Laptop',
+            name='product_2',
             price='999.99',
             stock=15,
             description='',
-            image='a_laptop.jpg',
+            image='product_2.jpg',
         )
         order_1 = models.Order.objects.create(user=user_1)
         order_2 = models.Order.objects.create(user=user_2)
@@ -45,15 +45,15 @@ class ProductTests(TestCase):
         models.Review.objects.create(
             user=user_1,
             product=product_1,
-            title="It's Okay",
-            body="It's alright for WiFi.",
+            title='review_1',
+            body='',
             rating=78,
         )
         models.Review.objects.create(
             user=user_2,
             product=product_1,
-            title="They're Great!",
-            body='Both of them work well.',
+            title='review_2',
+            body='',
             rating=98,
         )
 
