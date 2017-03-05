@@ -98,23 +98,20 @@ class ProductDetails(DetailView):
     model = Product
     template_name = 'commerce/product.html'
 
-    def get_object(self, queryset=None):
-        product = super().get_object(queryset)
-        if product.discontinued:
-            raise Http404()
-
-        return product
-
 def add_product(request, pk):
-    get_object_or_404(Product, pk=pk)
-    cart = get_cart(request.session)
-
-    if pk in cart:
-        cart[pk] += 1
+    try:
+        Product.active_objects.get(pk=pk)
+    except Product.DoesNotExist:
+        pass
     else:
-        cart[pk] = 1
+        cart = get_cart(request.session)
+        if pk in cart:
+            cart[pk] += 1
+        else:
+            cart[pk] = 1
 
-    request.session.modified = True
+        request.session.modified = True
+
     url = request.GET.get('next', reverse('index'))
     return redirect(url)
 
@@ -122,8 +119,8 @@ def delete_product(request, pk):
     cart = get_cart(request.session)
     if pk in cart:
         del cart[pk]
+        request.session.modified = True
 
-    request.session.modified = True
     url = request.GET.get('next', reverse('index'))
     return redirect(url)
 

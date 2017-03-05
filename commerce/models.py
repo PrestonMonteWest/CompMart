@@ -9,7 +9,7 @@ mutex = Lock()
 
 class ActiveProductManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(discontinued=False)
+        return super().get_queryset().filter(discontinued=False, stock__gt=0)
 
 class Product(models.Model):
     class Meta:

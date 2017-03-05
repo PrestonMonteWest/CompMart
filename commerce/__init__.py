@@ -1,7 +1,7 @@
 def get_cart(session):
     '''
-    Given a Django session, if the cart exists return it,
-    otherwise return an empty cart
+    Given a Django session, if the cart exists, return it;
+    otherwise return an empty cart.
     '''
 
     if 'cart' not in session:

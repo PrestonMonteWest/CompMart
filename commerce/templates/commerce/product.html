@@ -23,10 +23,12 @@
       <i>No Rating</i>
       {% endif %}
     </p>
+    {% if not product.discontinued and product.in_stock %}
     <a class="rounded button"
        href="{% url 'commerce:add_product' product.pk %}?next={{ product.get_absolute_url }}">
       Add
     </a>
+    {% endif %}
   </div>
   <p class="rounded text">{{ product.description|default:"<i>No Description</i>" }}</p>
 </div>
