@@ -191,3 +191,24 @@ class IndexTests(TestCase):
 
         response = self.client.get('/3/')
         self.assertEqual(response.status_code, 404)
+
+    def test_index_page_two_query(self):
+        '''
+        Test index view by going to page two of an explicit query.
+        '''
+
+        products = models.Product.active_objects.all()[12:]
+        response = self.client.get('/2/?query=product')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(
+            response.context['products'],
+            map(repr, products),
+        )
+        self.assertContains(response, 'Home', count=1)
+        self.assertContains(response, 'Cart', count=1)
+        self.assertContains(response, 'Login', count=1)
+        self.assertContains(response, 'Register', count=1)
+        self.assertNotContains(response, 'Logout')
+        self.assertNotContains(response, 'Account')
+        self.assertNotContains(response, 'Admin')

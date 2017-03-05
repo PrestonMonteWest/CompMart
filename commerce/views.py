@@ -76,6 +76,12 @@ class Index(ListView):
         else:
             self.page = 1
 
+        self.num_pages = (self.num_products // self.page_len)
+        self.num_pages += (1 if self.num_products % self.page_len != 0 else 0)
+
+        if self.num_pages != 0 and self.page > self.num_pages:
+            raise Http404()
+
         start = (self.page - 1) * self.page_len
         return products[start:start+self.page_len]
 
@@ -83,11 +89,8 @@ class Index(ListView):
         context = super().get_context_data(**kwargs)
         context['page'] = self.page
         context['form'] = self.search
-
-        num_pages = (self.num_products // self.page_len)
-        num_pages += (1 if self.num_products % self.page_len != 0 else 0)
-        context['num_pages'] = num_pages
-        context['page_iter'] = range(num_pages)
+        context['num_pages'] = self.num_pages
+        context['page_iter'] = range(self.num_pages)
 
         return context
 
