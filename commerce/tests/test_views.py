@@ -347,3 +347,16 @@ class ViewTests(TestCase):
 
         cart = self.client.session['cart']
         self.assertEqual(cart, {})
+
+    ### Cart Test ###
+    def test_cart_get(self):
+        '''
+        Test cart view with cart.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'1': 3, '5': 2}
+        session.save()
+
+        response = self.client.get('/commerce/cart/')
+        self.assertEqual(response.status_code, 200)

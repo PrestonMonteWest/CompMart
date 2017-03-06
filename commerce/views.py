@@ -126,7 +126,8 @@ def delete_product(request, pk):
 
 def cart(request):
     cart = get_cart(request.session)
-    if request.method == 'POST':
+    errors = check_cart(request.session)
+    if request.method == 'POST' and not errors:
         for key, value in request.POST.items():
             try:
                 pk = key
@@ -161,6 +162,7 @@ def cart(request):
     context = {
         'total': total,
         'items': items,
+        'errors': errors,
     }
 
     return render(request, 'commerce/cart.html', context)

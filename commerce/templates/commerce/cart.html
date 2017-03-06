@@ -16,6 +16,13 @@
   Your Cart
   {% endif %}
 </h2>
+{% if errors %}
+<ul class="error list">
+  {% for error in errors %}
+  <li>{{ error }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
 {% if items %}
 <form class="cart" method="post">
   {% csrf_token %}

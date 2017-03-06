@@ -7,6 +7,12 @@ class CheckoutForm(forms.Form):
     cvv = forms.CharField(label='CVV', max_length=3)
 
     def __init__(self, *args, **kwargs):
+        if 'cards' not in kwargs:
+            raise TypeError("'cards' is required")
+
+        if 'addresses' not in kwargs:
+            raise TypeError("'addresses' is required")
+
         cards = kwargs.pop('cards')
         addresses = kwargs.pop('addresses')
 
