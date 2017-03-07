@@ -9,13 +9,7 @@
 {% endblock %}
 
 {% block content %}
-<h2>
-  {% if user.is_authenticated %}
-  {{ user.first_name }}'s Cart
-  {% else %}
-  Your Cart
-  {% endif %}
-</h2>
+<h2>{% if user.is_authenticated %}{{ user.first_name }}'s Cart{% else %}Your Cart{% endif %}</h2>
 {% if errors %}
 <ul class="error list">
   {% for error in errors %}
@@ -39,7 +33,10 @@
 	${{ item.product.price }}
       </td>
       <td>
-	<input type="number" name="{{ item.product.pk }}" min="1"
+	<input type="number"
+	       name="{{ item.product.pk }}"
+	       min="1"
+	       max="{{ product.stock }}"
 	       value="{{ item.quantity }}">
       </td>
       <td>

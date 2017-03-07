@@ -7,43 +7,24 @@ from .forms import ProductSearchForm, CheckoutForm
 from .models import Product, OrderItem, Order
 from . import get_cart
 
-def check_cart(session):
+def get_products(session):
     cart = get_cart(session)
+    products = {}
     errors = []
-    for pk in cart:
+    for pk in sorted(cart):
         try:
-            Product.objects.get(pk=pk)
+            products[pk] = Product.active_objects.get(pk=pk)
         except Product.DoesNotExist:
             del cart[pk]
             session.modified = True
             errors.append(
                 ValidationError(
-                    'A product in your cart has been deleted from our database.'
+                    'A product has been removed from your cart '
+                    'because it is now ineligible for purchase.'
                 )
             )
-        else:
-            if product.discontinued:
-                del cart[pk]
-                session.modified = True
-                errors.append(
-                    ValidationError(
-                        '{product} has been discontinued.'.format(
-                            product=product
-                        )
-                    )
-                )
-            elif not product.in_stock:
-                del cart[pk]
-                session.modified = True
-                errors.append(
-                    ValidationError(
-                        '{product} is now out of stock.'.format(
-                            product=product
-                        )
-                    )
-                )
 
-    return errors
+    return (products, errors)
 
 class Index(ListView):
     template_name = 'commerce/index.html'
@@ -100,14 +81,15 @@ class ProductDetails(DetailView):
 
 def add_product(request, pk):
     try:
-        Product.active_objects.get(pk=pk)
+        product = Product.active_objects.get(pk=pk)
     except Product.DoesNotExist:
         pass
     else:
         cart = get_cart(request.session)
-        if pk in cart:
+        stock = product.stock
+        if pk in cart and stock > cart[pk]:
             cart[pk] += 1
-        else:
+        elif pk not in cart and stock > 0:
             cart[pk] = 1
 
         request.session.modified = True
@@ -125,34 +107,40 @@ def delete_product(request, pk):
     return redirect(url)
 
 def cart(request):
+    products, errors = get_products(request.session)
     cart = get_cart(request.session)
-    errors = check_cart(request.session)
     if request.method == 'POST' and not errors:
-        for key, value in request.POST.items():
-            try:
-                pk = key
-                value = int(value)
-                if value >= 1:
-                    cart[pk] = value
-                    request.session.modified = True
-
-            except (KeyError, ValueError):
-                pass
-
         if 'checkout' in request.POST:
+            checkout = True
+            del request.POST['checkout']
+        else:
+            checkout = False
+
+        for key, value in request.POST.items():
+            if key not in cart:
+                    continue
+                
+            product = products[key]
+            stock = product.stock
+            try:
+                value = int(value)
+            except ValueError:
+                continue
+
+            if value > stock:
+                value = stock
+
+            if value >= 1:
+                cart[key] = value
+                request.session.modified = True
+
+        if checkout and cart:
             return redirect(reverse('commerce:checkout'))
 
     items = []
     total = 0
-    for pk in sorted(cart):
-        try:
-            product = Product.active_objects.get(pk=pk)
-        except Product.DoesNotExist:
-            del cart[pk]
-            request.session.modified = True
-            continue
-        else:
-            quantity = cart[pk]
+    for product in products.values():
+            quantity = cart[str(product.pk)]
             total += product.price * quantity
             items.append({
                 'product': product,
@@ -188,16 +176,15 @@ def checkout(request):
         ))
 
     form = CheckoutForm(request.POST or None, cards=cards, addresses=addresses)
-    for error in check_cart(request.session):
+    products, errors = get_products(request.session)
+    for error in errors:
         form.add_error(None, error)
 
     if form.is_valid():
         order = Order(user=request.user)
         items = []
         total = 0
-        for pk, quantity in cart.items():
-            product = Product.objects.get(pk=pk)
-
+        for product in products:
             items.append(OrderItem(
                 product=product,
                 order=order,
