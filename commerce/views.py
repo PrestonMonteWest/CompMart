@@ -161,17 +161,17 @@ def checkout(request):
     if not cart:
         return redirect(reverse('index'))
 
-    cards = request.user.cards.all()
-    if not cards:
-        return redirect('{}?next={}'.format(
-            reverse('account:add_card'),
-            request.path
-        ))
-
     addresses = request.user.addresses.all()
     if not addresses:
         return redirect('{}?next={}'.format(
             reverse('account:add_address'),
+            request.path
+        ))
+
+    cards = request.user.cards.all()
+    if not cards:
+        return redirect('{}?next={}'.format(
+            reverse('account:add_card'),
             request.path
         ))
 

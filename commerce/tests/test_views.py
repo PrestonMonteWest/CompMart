@@ -1,3 +1,4 @@
+import datetime
 from django.test import TestCase, Client
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
@@ -579,5 +580,112 @@ class ViewTests(TestCase):
         self.assertEqual(cart['2'], 3)
 
     ### Checkout Test ###
-    def test_checkout(self):
-        pass
+    def test_checkout_no_login_no_cart_no_address_no_card(self):
+        '''
+        Test checkout view with no login, no cart, no address, and no card using GET,
+        which should return a redirect response.
+        '''
+
+        url = '/commerce/checkout/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/login/?next=' + url)
+
+    def test_checkout_login_no_cart_no_address_no_card(self):
+        '''
+        Test checkout view with login, no cart, no address, and no card using GET,
+        which should return a redirect response.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.get('/commerce/checkout/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_checkout_login_cart_no_address_no_card(self):
+        '''
+        Test checkout view with login, cart, no address, and no card using GET,
+        which should return a redirect response.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        session = self.client.session
+        session['cart'] = temp_cart = {'1': 2}
+        session.save()
+
+        url = '/commerce/checkout/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/addresses/add_address/?next=' + url)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, temp_cart)
+
+    def test_checkout_login_cart_address_no_card(self):
+        '''
+        Test checkout view with login, cart, address, and no card using GET,
+        which should return a redirect response.
+        '''
+
+        user = User.objects.get(username='user_1')
+        user.addresses.create(
+            street='',
+            city='',
+            state='',
+            zip_code='',
+        )
+
+        self.client.force_login(user)
+
+        session = self.client.session
+        session['cart'] = temp_cart = {'1': 2}
+        session.save()
+
+        url = '/commerce/checkout/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/cards/add_card/?next=' + url)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, temp_cart)
+
+    def test_checkout_login_cart_address_card(self):
+        '''
+        Test checkout view with login, cart, address, and no card using GET,
+        which should return a redirect response.
+        '''
+
+        user = User.objects.get(username='user_1')
+        user.addresses.create(
+            street='',
+            city='',
+            state='',
+            zip_code='',
+        )
+
+        user.cards.create(
+            card_number='',
+            card_type='',
+            holder_name='',
+            expiration_date=datetime.date.today(),
+        )
+
+        self.client.force_login(user)
+
+        session = self.client.session
+        session['cart'] = temp_cart = {'1': 2}
+        session.save()
+
+        response = self.client.get('/commerce/checkout/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'form')
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, temp_cart)
