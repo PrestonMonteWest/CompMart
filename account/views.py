@@ -1,6 +1,6 @@
 from django.shortcuts import reverse, redirect, render
 from django.utils.decorators import method_decorator
-from django.core.urlresolvers import resolve, reverse_lazy
+from django.urls import resolve, reverse_lazy
 from django.http import Http404
 from django.contrib.auth.views import password_change, login
 from django.views import generic

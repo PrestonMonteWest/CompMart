@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import Http404
 from django.views.generic import ListView, DetailView
+from django.db import transaction
 from django.db.models import Q
 from django.forms import ValidationError
 from account import login_required
+from account.models import Address, CreditCard
 from .forms import ProductSearchForm, CheckoutForm
 from .models import Product, OrderItem, Order
 from . import get_cart
@@ -121,7 +123,7 @@ def cart(request):
         for key, value in post.items():
             if key not in cart:
                     continue
-                
+
             product = products[key]
             stock = product.stock
             try:
@@ -159,9 +161,17 @@ def cart(request):
 
 @login_required
 def checkout(request):
+    products, errors = get_products(request.session)
     cart = get_cart(request.session)
     if not cart:
-        return redirect(reverse('index'))
+        if not errors:
+            return redirect(reverse('index'))
+
+        return render(
+            request,
+            'commerce/cart.html',
+            {'errors': errors},
+        )
 
     addresses = request.user.addresses.all()
     if not addresses:
@@ -172,38 +182,56 @@ def checkout(request):
 
     cards = request.user.cards.all()
     if not cards:
-        return redirect('{}?next={}'.format(
+        return redirect('%s?next=%s' % (
             reverse('account:add_card'),
             request.path
         ))
 
-    form = CheckoutForm(request.POST or None, cards=cards, addresses=addresses)
-    products, errors = get_products(request.session)
+    form = CheckoutForm(
+        request.POST or None,
+        cards=cards,
+        addresses=addresses,
+    )
+
     for error in errors:
         form.add_error(None, error)
 
     if form.is_valid():
-        order = Order(user=request.user)
+        address = Address.objects.get(pk=form.cleaned_data['address'])
+        card = CreditCard.objects.get(pk=form.cleaned_data['card'])
+        order = Order(
+            user=request.user,
+            card=card,
+            street=address.street,
+            city=address.city,
+            state=address.state,
+            zip_code=address.zip_code,
+        )
+
         items = []
         total = 0
-        for product in products:
+        for pk, product in products.items():
+            price = product.price
             items.append(OrderItem(
                 product=product,
                 order=order,
-                price=product.price,
-                quantity=quantity
+                purchase_price=price,
+                quantity=cart[pk],
             ))
-            total += product.price
+            total += price
 
         order.total = total
-        order.save()
-        for item in items:
-            try:
-                item.save()
-            except ValueError as e:
-                form.add_error(None, ValidationError(str(e)))
-                break
+        try:
+            with transaction.atomic():
+                order.save()
+                for item in items:
+                    item.save()
+        except ValueError as e:
+            form.add_error(None, ValidationError(str(e)))
         else:
+            # charge credit card
+            cart.clear()
+            request.session.modified = True
             return redirect(reverse('commerce:thank_you', args=(order.pk,)))
 
     return render(request, 'commerce/checkout.html', {'form': form})

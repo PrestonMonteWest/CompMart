@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 from django.test import TestCase, Client
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
@@ -11,6 +12,7 @@ class ViewTests(TestCase):
             username='user_1',
             password='password_1',
         )
+
         user = User.objects.create_user(
             pk=2,
             username='user_2',
@@ -18,17 +20,31 @@ class ViewTests(TestCase):
             is_staff=True,
         )
         user.addresses.create(
-            street='',
-            city='',
-            state='',
-            zip_code='',
+            pk=1,
+            street='street_1',
+            city='city_1',
+            state='S1',
+            zip_code='zip_1',
+        )
+        user.cards.create(
+            pk=1,
+            card_number='card_1',
+            card_type='type_1',
+            holder_name='name_1',
+            expiration_date=datetime.date.today(),
         )
 
-        user.cards.create(
-            card_number='',
-            card_type='',
-            holder_name='',
-            expiration_date=datetime.date.today(),
+        user = User.objects.create_user(
+            pk=3,
+            username='user_3',
+            password='password_3',
+        )
+        user.addresses.create(
+            pk=2,
+            street='street_2',
+            city='city_2',
+            state='S2',
+            zip_code='zip_2',
         )
 
         prices = [
@@ -592,6 +608,62 @@ class ViewTests(TestCase):
         cart = self.client.session['cart']
         self.assertEqual(cart['2'], 3)
 
+    def test_cart_get_with_invalid_cart(self):
+        '''
+        Test cart view with invalid cart using GET.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'3': 1, '15': 1}
+        session.save()
+
+        response = self.client.get('/commerce/cart/')
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'form')
+        self.assertContains(response, 'error list', count=1)
+        self.assertContains(response, 'Cart is empty.', count=1)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_cart_post_update_with_invalid_cart(self):
+        '''
+        Test cart view with invalid cart using no POST data
+        submitted through update button.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'3': 1, '15': 1}
+        session.save()
+
+        response = self.client.post('/commerce/cart/')
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'form')
+        self.assertContains(response, 'error list', count=1)
+        self.assertContains(response, 'Cart is empty.', count=1)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_cart_post_checkout_with_invalid_cart(self):
+        '''
+        Test cart view with invalid cart using no POST data
+        submitted through checkout button.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'3': 1, '15': 1}
+        session.save()
+
+        response = self.client.post('/commerce/cart/', {'checkout': 'Checkout'})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'form')
+        self.assertContains(response, 'error list', count=1)
+        self.assertContains(response, 'Cart is empty.', count=1)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
     ### Checkout Test ###
     def test_checkout_no_login_no_cart_no_address_no_card(self):
         '''
@@ -647,14 +719,7 @@ class ViewTests(TestCase):
         which should return a redirect response.
         '''
 
-        user = User.objects.get(username='user_1')
-        user.addresses.create(
-            street='',
-            city='',
-            state='',
-            zip_code='',
-        )
-
+        user = User.objects.get(username='user_3')
         self.client.force_login(user)
 
         session = self.client.session
@@ -669,27 +734,12 @@ class ViewTests(TestCase):
         cart = self.client.session['cart']
         self.assertEqual(cart, temp_cart)
 
-    def test_checkout_login_cart_address_card(self):
+    def test_checkout_get(self):
         '''
-        Test checkout view with login, cart, address, and card using GET,
-        which should return a redirect response.
+        Test checkout view using GET.
         '''
 
-        user = User.objects.get(username='user_1')
-        user.addresses.create(
-            street='',
-            city='',
-            state='',
-            zip_code='',
-        )
-
-        user.cards.create(
-            card_number='',
-            card_type='',
-            holder_name='',
-            expiration_date=datetime.date.today(),
-        )
-
+        user = User.objects.get(username='user_2')
         self.client.force_login(user)
 
         session = self.client.session
@@ -704,7 +754,7 @@ class ViewTests(TestCase):
         cart = self.client.session['cart']
         self.assertEqual(cart, temp_cart)
 
-    def test_checkout_cart_over_stock(self):
+    def test_checkout_get_with_invalid_cart(self):
         '''
         Test checkout with invalid cart using GET.
         '''
@@ -713,13 +763,138 @@ class ViewTests(TestCase):
         self.client.force_login(user)
 
         session = self.client.session
-        session['cart'] = {'3': 1}
+        session['cart'] = {'3': 1, '15': 1}
         session.save()
 
         response = self.client.get('/commerce/checkout/')
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'form')
+        self.assertNotContains(response, 'form')
         self.assertContains(response, 'error list', count=1)
+        self.assertContains(response, 'Cart is empty.', count=1)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_checkout_post_with_invalid_cart(self):
+        '''
+        Test checkout with invalid cart using POST data.
+        '''
+
+        user = User.objects.get(username='user_2')
+        self.client.force_login(user)
+
+        session = self.client.session
+        session['cart'] = {'3': 1, '15': 1}
+        session.save()
+
+        response = self.client.post(
+            '/commerce/checkout/',
+            {
+                'cvv': 210,
+                'address': 1,
+                'card': 1,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'form')
+        self.assertContains(response, 'error list', count=1)
+        self.assertContains(response, 'Cart is empty.', count=1)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_checkout_post_with_partly_invalid_cart(self):
+        '''
+        Test checkout with invalid cart using POST data.
+        '''
+
+        user = User.objects.get(username='user_2')
+        self.client.force_login(user)
+
+        session = self.client.session
+        session['cart'] = {'3': 1, '1': 2}
+        session.save()
+
+        response = self.client.post(
+            '/commerce/checkout/',
+            {
+                'cvv': 210,
+                'address': 1,
+                'card': 1,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'form')
+        self.assertContains(response, 'type="radio"', count=2)
+        self.assertContains(response, 'error list', count=1)
+        self.assertContains(response, 'value="210"', count=1)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart['1'], 2)
+
+    def test_checkout_invalid_post_with_cart(self):
+        '''
+        Test checkout with cart using invalid POST data.
+        '''
+
+        user = User.objects.get(username='user_2')
+        self.client.force_login(user)
+
+        session = self.client.session
+        session['cart'] = {'1': 2, '5': 3}
+        session.save()
+
+        response = self.client.post(
+            '/commerce/checkout/',
+            {
+                'cvv': 210,
+                'address': 2,
+                'card': 3,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'form')
+        self.assertContains(response, 'type="radio"', count=2)
+        self.assertContains(response, 'error list', count=2)
+        self.assertContains(response, 'value="210"', count=1)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart['1'], 2)
+        self.assertEqual(cart['5'], 3)
+
+    def test_checkout_post_with_cart(self):
+        '''
+        Test checkout with cart using POST data.
+        '''
+
+        user = User.objects.get(username='user_2')
+        self.client.force_login(user)
+
+        session = self.client.session
+        session['cart'] = {'1': 2, '5': 3}
+        session.save()
+
+        response = self.client.post(
+            '/commerce/checkout/',
+            {
+                'cvv': 210,
+                'address': 1,
+                'card': 1,
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+        orders = models.Order.objects.all()
+        self.assertEqual(len(orders), 1)
+        order = orders.first()
+        self.assertEqual(order.total, Decimal('363.16'))
+
+        items = models.OrderItem.objects.all()
+        self.assertEqual(len(items), 2)
+        item_1 = items[0]
+        item_2 = items[1]
+        self.assertEqual(item_1, 2)
+        self.assertEqual(item_2, 3)
 
         cart = self.client.session['cart']
         self.assertEqual(cart, {})

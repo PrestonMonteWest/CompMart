@@ -3,7 +3,7 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from django.urls import reverse
-from account.models import AddressBase
+from account.models import AddressBase, CreditCard
 
 mutex = Lock()
 
@@ -76,7 +76,13 @@ class Order(AddressBase):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         models.CASCADE,
-        related_name='orders'
+        related_name='orders',
+    )
+    card = models.ForeignKey(
+        CreditCard,
+        models.SET_NULL,
+        related_name='orders',
+        null=True,
     )
     purchase_date = models.DateTimeField(default=timezone.now)
     total = models.DecimalField(max_digits=7, decimal_places=2)

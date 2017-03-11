@@ -65,7 +65,7 @@ class CheckoutForm(MyForm):
         )
 
     def clean_cvv(self):
-        cvv = cleaned_data['cvv']
+        cvv = self.cleaned_data['cvv']
 
         if not cvv.isdigit():
             raise forms.ValidationError('CVV must be numeric.')
