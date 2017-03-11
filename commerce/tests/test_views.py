@@ -11,11 +11,24 @@ class ViewTests(TestCase):
             username='user_1',
             password='password_1',
         )
-        User.objects.create_user(
+        user = User.objects.create_user(
             pk=2,
             username='user_2',
             password='password_2',
             is_staff=True,
+        )
+        user.addresses.create(
+            street='',
+            city='',
+            state='',
+            zip_code='',
+        )
+
+        user.cards.create(
+            card_number='',
+            card_type='',
+            holder_name='',
+            expiration_date=datetime.date.today(),
         )
 
         prices = [
@@ -658,7 +671,7 @@ class ViewTests(TestCase):
 
     def test_checkout_login_cart_address_card(self):
         '''
-        Test checkout view with login, cart, address, and no card using GET,
+        Test checkout view with login, cart, address, and card using GET,
         which should return a redirect response.
         '''
 
@@ -686,6 +699,27 @@ class ViewTests(TestCase):
         response = self.client.get('/commerce/checkout/')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'form')
+        self.assertContains(response, 'type="radio"', count=2)
 
         cart = self.client.session['cart']
         self.assertEqual(cart, temp_cart)
+
+    def test_checkout_cart_over_stock(self):
+        '''
+        Test checkout with invalid cart using GET.
+        '''
+
+        user = User.objects.get(username='user_2')
+        self.client.force_login(user)
+
+        session = self.client.session
+        session['cart'] = {'3': 1}
+        session.save()
+
+        response = self.client.get('/commerce/checkout/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'form')
+        self.assertContains(response, 'error list', count=1)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})

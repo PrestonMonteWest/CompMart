@@ -28,8 +28,8 @@ class ProductTests(TestCase):
             description='',
             image='product_2.jpg',
         )
-        order_1 = models.Order.objects.create(user=user_1)
-        order_2 = models.Order.objects.create(user=user_2)
+        order_1 = models.Order.objects.create(user=user_1, total='29.99')
+        order_2 = models.Order.objects.create(user=user_2, total='49.98')
         models.OrderItem.objects.create(
             product=product_1,
             order=order_1,

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import Http404
 from django.views.generic import ListView, DetailView
 from django.db.models import Q
+from django.forms import ValidationError
 from account import login_required
 from .forms import ProductSearchForm, CheckoutForm
 from .models import Product, OrderItem, Order
@@ -110,13 +111,14 @@ def cart(request):
     products, errors = get_products(request.session)
     cart = get_cart(request.session)
     if request.method == 'POST' and not errors:
-        if 'checkout' in request.POST:
+        post = request.POST.copy()
+        if 'checkout' in post:
             checkout = True
-            del request.POST['checkout']
+            del post['checkout']
         else:
             checkout = False
 
-        for key, value in request.POST.items():
+        for key, value in post.items():
             if key not in cart:
                     continue
                 
@@ -196,9 +198,13 @@ def checkout(request):
         order.total = total
         order.save()
         for item in items:
-            item.save()
-
-        return redirect(reverse('commerce:thank_you', args=(order.pk,)))
+            try:
+                item.save()
+            except ValueError as e:
+                form.add_error(None, ValidationError(str(e)))
+                break
+        else:
+            return redirect(reverse('commerce:thank_you', args=(order.pk,)))
 
     return render(request, 'commerce/checkout.html', {'form': form})
 

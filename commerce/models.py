@@ -79,10 +79,7 @@ class Order(AddressBase):
         related_name='orders'
     )
     purchase_date = models.DateTimeField(default=timezone.now)
-
-    @property
-    def total(self):
-        return 0
+    total = models.DecimalField(max_digits=7, decimal_places=2)
 
     def get_absolute_url(self):
         return reverse('account:order', args=(self.pk,))
@@ -109,5 +106,5 @@ class OrderItem(models.Model):
             self.product.save()
             super().save(*args, **kwargs)
         else:
-            raise ValueError('%s is out of stock!' % self.product)
+            raise ValueError('%s is out of stock.' % self.product)
         mutex.release()
