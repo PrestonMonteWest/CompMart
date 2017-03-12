@@ -1,11 +1,11 @@
 import datetime
 from decimal import Decimal
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 from .. import models
 
-class ViewTests(TestCase):
+class TestViews(TestCase):
     def setUp(self):
         User.objects.create_user(
             pk=1,
