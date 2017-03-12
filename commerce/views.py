@@ -199,13 +199,14 @@ def checkout(request):
     if form.is_valid():
         address = Address.objects.get(pk=form.cleaned_data['address'])
         card = CreditCard.objects.get(pk=form.cleaned_data['card'])
-        order = Order(
+        order = Order.objects.create(
             user=request.user,
             card=card,
             street=address.street,
             city=address.city,
             state=address.state,
             zip_code=address.zip_code,
+            total=0,
         )
 
         items = []
@@ -218,15 +219,17 @@ def checkout(request):
                 purchase_price=price,
                 quantity=cart[pk],
             ))
-            total += price
+            total += price * cart[pk]
 
         order.total = total
+        order.save()
         try:
             with transaction.atomic():
-                order.save()
                 for item in items:
                     item.save()
         except ValueError as e:
+            order.delete()
+            del cart[str(item.product.pk)]
             form.add_error(None, ValidationError(str(e)))
         else:
             # charge credit card
@@ -238,4 +241,9 @@ def checkout(request):
 
 @login_required
 def thank_you(request, pk):
-    pass
+    try:
+        order = request.user.orders.get(pk=pk)
+    except Order.DoesNotExist:
+        return redirect(reverse('index'))
+
+    return render(request, 'commerce/thank_you.html', {'order': order})

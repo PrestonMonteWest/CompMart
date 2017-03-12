@@ -39,12 +39,20 @@ class ViewTests(TestCase):
             username='user_3',
             password='password_3',
         )
-        user.addresses.create(
+        address = user.addresses.create(
             pk=2,
             street='street_2',
             city='city_2',
             state='S2',
             zip_code='zip_2',
+        )
+        user.orders.create(
+            pk=1,
+            street=address.street,
+            city=address.city,
+            state=address.state,
+            zip_code=address.zip_code,
+            total=0,
         )
 
         prices = [
@@ -101,14 +109,14 @@ class ViewTests(TestCase):
         product.discontinued = True
         product.save()
 
-        self.page_length = 12
+        self.page_len = 12
 
         site = Site.objects.get(pk=2)
         site.domain = 'localhost'
         site.name = 'CompMart'
         site.save()
 
-    ### Navigation Testing ###
+    ### Navigation Tests ###
     def test_nav_no_login(self):
         '''
         Test navigation bar with no login session.
@@ -158,13 +166,13 @@ class ViewTests(TestCase):
         self.assertContains(response, 'Account', count=1)
         self.assertContains(response, 'Admin', count=1)
 
-    ### Index Testing ###
+    ### Index Tests ###
     def test_index(self):
         '''
         Test index view with no query.
         '''
 
-        products = models.Product.active_objects.all()[:self.page_length]
+        products = models.Product.active_objects.all()[:self.page_len]
         response = self.client.get('/')
 
         self.assertEqual(response.status_code, 200)
@@ -230,7 +238,7 @@ class ViewTests(TestCase):
         Test index view on page two.
         '''
 
-        products = models.Product.active_objects.all()[self.page_length:]
+        products = models.Product.active_objects.all()[self.page_len:]
         response = self.client.get('/2/')
 
         self.assertEqual(response.status_code, 200)
@@ -263,7 +271,7 @@ class ViewTests(TestCase):
         )
         self.assertContains(response, 'pagination', count=1)
 
-    ### Product Details Testing ###
+    ### Product Details Tests ###
     def test_details(self):
         '''
         Test details view with active product.
@@ -306,7 +314,7 @@ class ViewTests(TestCase):
         self.assertEqual(response.context['product'], product)
         self.assertNotContains(response, 'Add')
 
-    ### Add Product Testing ###
+    ### Add Product Tests ###
     def test_add_product(self):
         '''
         Test add_product view with active product.
@@ -314,6 +322,20 @@ class ViewTests(TestCase):
 
         response = self.client.get('/commerce/add_product/1/')
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart['1'], 1)
+
+    def test_add_product_next(self):
+        '''
+        Test add_product view with active product and next query.
+        '''
+
+        url = '/commerce/product/1/'
+        response = self.client.get('/commerce/add_product/1/?next=' + url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, url)
 
         cart = self.client.session['cart']
         self.assertEqual(cart['1'], 1)
@@ -325,6 +347,7 @@ class ViewTests(TestCase):
 
         response = self.client.get('/commerce/add_product/15/')
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
 
         cart = self.client.session.get('cart', None)
         self.assertIs(cart, None)
@@ -336,6 +359,7 @@ class ViewTests(TestCase):
 
         response = self.client.get('/commerce/add_product/100/')
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
 
         cart = self.client.session.get('cart', None)
         self.assertIs(cart, None)
@@ -347,6 +371,7 @@ class ViewTests(TestCase):
 
         response = self.client.get('/commerce/add_product/3/')
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
 
         cart = self.client.session.get('cart', None)
         self.assertIs(cart, None)
@@ -364,14 +389,15 @@ class ViewTests(TestCase):
 
         response = self.client.get('/commerce/add_product/2/')
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
 
         cart = self.client.session['cart']
         self.assertEqual(cart['2'], 3)
 
-    ### Delete Product Testing ###
-    def test_delete_product_in_cart(self):
+    ### Delete Product Tests ###
+    def test_delete_product_with_cart(self):
         '''
-        Test delete_product view with active product in cart.
+        Test delete_product view with cart.
         '''
 
         session = self.client.session
@@ -380,6 +406,24 @@ class ViewTests(TestCase):
 
         response = self.client.get('/commerce/delete_product/1/')
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_delete_product_with_cart_next(self):
+        '''
+        Test delete_product view with cart and next query.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'1': 3}
+        session.save()
+
+        url = '/commerce/cart/'
+        response = self.client.get('/commerce/delete_product/1/?next=' + url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, url)
 
         cart = self.client.session['cart']
         self.assertEqual(cart, {})
@@ -391,11 +435,12 @@ class ViewTests(TestCase):
 
         response = self.client.get('/commerce/delete_product/1/')
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
 
         cart = self.client.session['cart']
         self.assertEqual(cart, {})
 
-    ### Cart Test ###
+    ### Cart Tests ###
     def test_cart(self):
         '''
         Test cart view with cart using GET.
@@ -464,6 +509,7 @@ class ViewTests(TestCase):
 
         response = self.client.post('/commerce/cart/', {'checkout': 'Checkout'})
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/checkout/')
 
         cart = self.client.session['cart']
         self.assertEqual(cart['1'], 3)
@@ -484,6 +530,7 @@ class ViewTests(TestCase):
             {'1': 2, 'checkout': 'Checkout'},
         )
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/checkout/')
 
         cart = self.client.session['cart']
         self.assertEqual(cart['1'], 2)
@@ -504,6 +551,7 @@ class ViewTests(TestCase):
             {'1': 2, 'five': 'three', 'checkout': 'Checkout'},
         )
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/checkout/')
 
         cart = self.client.session['cart']
         self.assertEqual(cart['1'], 2)
@@ -604,6 +652,7 @@ class ViewTests(TestCase):
             {'2': 4, 'checkout': 'Checkout'},
         )
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/checkout/')
 
         cart = self.client.session['cart']
         self.assertEqual(cart['2'], 3)
@@ -664,7 +713,7 @@ class ViewTests(TestCase):
         cart = self.client.session['cart']
         self.assertEqual(cart, {})
 
-    ### Checkout Test ###
+    ### Checkout Tests ###
     def test_checkout_no_login_no_cart_no_address_no_card(self):
         '''
         Test checkout view with no login, no cart, no address, and no card using GET,
@@ -748,7 +797,7 @@ class ViewTests(TestCase):
 
         response = self.client.get('/commerce/checkout/')
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'form')
+        self.assertTrue('form' in response.context)
         self.assertContains(response, 'type="radio"', count=2)
 
         cart = self.client.session['cart']
@@ -768,7 +817,7 @@ class ViewTests(TestCase):
 
         response = self.client.get('/commerce/checkout/')
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, 'form')
+        self.assertTrue('form' not in response.context)
         self.assertContains(response, 'error list', count=1)
         self.assertContains(response, 'Cart is empty.', count=1)
 
@@ -796,7 +845,7 @@ class ViewTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, 'form')
+        self.assertTrue('form' not in response.context)
         self.assertContains(response, 'error list', count=1)
         self.assertContains(response, 'Cart is empty.', count=1)
 
@@ -824,7 +873,7 @@ class ViewTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'form')
+        self.assertTrue('form' in response.context)
         self.assertContains(response, 'type="radio"', count=2)
         self.assertContains(response, 'error list', count=1)
         self.assertContains(response, 'value="210"', count=1)
@@ -853,7 +902,7 @@ class ViewTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'form')
+        self.assertTrue('form' in response.context)
         self.assertContains(response, 'type="radio"', count=2)
         self.assertContains(response, 'error list', count=2)
         self.assertContains(response, 'value="210"', count=1)
@@ -884,17 +933,66 @@ class ViewTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
 
-        orders = models.Order.objects.all()
+        orders = user.orders.all()
         self.assertEqual(len(orders), 1)
         order = orders.first()
         self.assertEqual(order.total, Decimal('363.16'))
+        self.assertEqual(response.url, '/commerce/thank_you/%d/' % order.pk)
 
-        items = models.OrderItem.objects.all()
+        items = order.orderitem_set.all()
         self.assertEqual(len(items), 2)
-        item_1 = items[0]
-        item_2 = items[1]
-        self.assertEqual(item_1, 2)
-        self.assertEqual(item_2, 3)
+        for item in items:
+            if item.product.pk == 1:
+                self.assertEqual(item.quantity, 2)
+            elif item.product.pk == 5:
+                self.assertEqual(item.quantity, 3)
 
         cart = self.client.session['cart']
         self.assertEqual(cart, {})
+
+    ### Thank You Tests ###
+    def test_thank_you_get(self):
+        '''
+        Test thank_you view using GET.
+        '''
+
+        user = User.objects.get(username='user_3')
+        self.client.force_login(user)
+
+        response = self.client.get('/commerce/thank_you/1/')
+        self.assertEqual(response.status_code, 200)
+
+        order = user.orders.first()
+        self.assertEqual(response.context['order'], order)
+
+    def test_thank_you_post(self):
+        '''
+        Test thank_you view using junk POST data.
+        '''
+
+        user = User.objects.get(username='user_3')
+        self.client.force_login(user)
+
+        response = self.client.post(
+            '/commerce/thank_you/1/',
+            {
+                'data_1': 'junk_1',
+                'data_2': 'junk_2',
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+
+        order = user.orders.first()
+        self.assertEqual(response.context['order'], order)
+
+    def test_thank_you_get_invalid_pk(self):
+        '''
+        Test thank_you view using GET with invalid order pk.
+        '''
+
+        user = User.objects.get(username='user_3')
+        self.client.force_login(user)
+
+        response = self.client.get('/commerce/thank_you/2/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')

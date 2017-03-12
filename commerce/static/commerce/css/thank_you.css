@@ -1,0 +1,8 @@
+.order {
+    margin: 20px 0;
+    border: 1px solid #ccc;
+}
+
+.order > table {width: 100%;}
+
+.order > div {border-top: 1px solid #ccc;}

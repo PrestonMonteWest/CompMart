@@ -1,0 +1,53 @@
+{% extends 'commerce/commerce.html' %}
+
+{% block title %}Thank you!{% endblock %}
+
+{% load static %}
+{% block styles %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'commerce/css/thank_you.css' %}">
+{% endblock %}
+
+{% block content %}
+<h2>Thanks {{ user.first_name }}!</h2>
+<p class="rounded text">
+  Thank you for your purchase. Your order details are below.
+</p>
+<div class="rounded order">
+  <table>
+    <tr>
+      <th></th>
+      <th>Name</th>
+      <th>Price</th>
+      <th>Quantity</th>
+    </tr>
+    {% for item in order.orderitem_set.all %}
+    <tr>
+      <td class="image-box">
+	<img alt="{{ item.product.name }}"
+	     src="{{ item.product.image.url }}">
+      </td>
+      <td>
+	<a href="{{ item.product.get_absolute_url }}">
+	  {{ item.product.name }}
+	</a>
+      </td>
+      <td>${{ item.product.price }}</td>
+      <td>{{ item.quantity }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <div>
+    <h3>Payment Method:</h3>
+    {% if order.card %}
+    <p>{{ order.card }}</p>
+    {% else %}
+    <p><i>Card is deleted.</i></p>
+    {% endif %}
+  </div>
+  <div>
+    <h3>Total:</h3>
+    <p class="rounded">${{ order.total }}</p>
+  </div>
+</div>
+{% endblock %}
