@@ -28,7 +28,7 @@ class TestViews(TestCase):
         )
         user.cards.create(
             pk=1,
-            card_number='card_1',
+            card_number='',
             card_type='type_1',
             holder_name='name_1',
             expiration_date=datetime.date.today(),
