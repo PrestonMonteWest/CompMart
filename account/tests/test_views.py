@@ -87,5 +87,95 @@ class TestViews(TestCase):
             quantity=1,
         )
 
-    def test(self):
-        pass
+        user = User.objects.create_user(
+            pk=5,
+            username='user_5',
+            password='password_5',
+        )
+        address = user.addresses.create(
+            pk=4,
+            street='street_4',
+            city='city_4',
+            state='S4',
+            zip_code='zip_4',
+        )
+        user.cards.create(
+            pk=3,
+            card_number='',
+            card_type='type_3',
+            holder_name='name_3',
+            expiration_date=datetime.date.today(),
+        )
+        order = user.orders.create(
+            pk=2,
+            street=address.street,
+            city=address.city,
+            state=address.state,
+            zip_code=address.zip_code,
+            total='1.99',
+        )
+        models.OrderItem.objects.create(
+            pk=2,
+            order=order,
+            product=product,
+            purchase_price='1.99',
+            quantity=1,
+        )
+        models.Review.objects.create(
+            pk=1,
+            product=product,
+            user=user,
+            title='title_1',
+            body='body_1',
+            rating=50,
+        )
+
+    def test_index_no_address_no_card_no_order_no_review(self):
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/')
+        self.assertContains(response, 'Add Address', count=1)
+        self.assertContains(response, 'Add Card', count=1)
+        self.assertNotContains(response, 'Orders')
+        self.assertNotContains(response, 'Reviews')
+
+    def test_index_no_card_no_order_no_review(self):
+        user = User.objects.get(username='user_2')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/')
+        self.assertContains(response, 'Addresses', count=1)
+        self.assertContains(response, 'Add Card', count=1)
+        self.assertNotContains(response, 'Orders')
+        self.assertNotContains(response, 'Reviews')
+
+    def test_index_no_order_no_review(self):
+        user = User.objects.get(username='user_3')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/')
+        self.assertContains(response, 'Addresses', count=1)
+        self.assertContains(response, 'Cards', count=1)
+        self.assertNotContains(response, 'Orders')
+        self.assertNotContains(response, 'Reviews')
+
+    def test_index_no_review(self):
+        user = User.objects.get(username='user_4')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/')
+        self.assertContains(response, 'Addresses', count=1)
+        self.assertContains(response, 'Cards', count=1)
+        self.assertContains(response, 'Orders', count=1)
+        self.assertNotContains(response, 'Reviews')
+
+    def test_index(self):
+        user = User.objects.get(username='user_5')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/')
+        self.assertContains(response, 'Addresses', count=1)
+        self.assertContains(response, 'Cards', count=1)
+        self.assertContains(response, 'Orders', count=1)
+        self.assertContains(response, 'Reviews', count=1)
