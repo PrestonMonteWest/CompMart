@@ -460,3 +460,68 @@ class TestViews(TestCase):
 
         errors = response.context['form'].errors
         self.assertEqual(len(errors), 1)
+
+    def test_logout(self):
+        '''
+        Test logout with login using GET.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/logout/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        user = get_user(self.client)
+        self.assertTrue(user.is_anonymous)
+
+    def test_logout_no_login(self):
+        '''
+        Test logout with no login using GET.
+        '''
+
+        response = self.client.get('/account/logout/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+    def test_logout_with_next(self):
+        '''
+        Test logout with login and next query parameter using GET.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/logout/?next=/commerce/cart/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/cart/')
+
+        user = get_user(self.client)
+        self.assertTrue(user.is_anonymous)
+
+    def test_logout_with_cart(self):
+        '''
+        Test logout with login and cart using GET.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        session = self.client.session
+        session['cart'] = {'1': 3}
+        session.save()
+
+        response = self.client.get('/account/logout/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        user = get_user(self.client)
+        self.assertTrue(user.is_anonymous)
+
+        self.assertIn('cart', self.client.session)
+        cart = self.client.session['cart']
+        self.assertEqual(cart['1'], 3)
+
+    def test_address_list(self):
+        pass
