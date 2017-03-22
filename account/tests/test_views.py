@@ -1,6 +1,7 @@
 import datetime
 from django.test import TestCase
 from django.contrib.auth.models import User
+from django.contrib.auth import get_user
 from commerce import models
 
 class TestViews(TestCase):
@@ -267,6 +268,10 @@ class TestViews(TestCase):
         self.assertNotContains(response, 'Reviews')
 
     def test_index(self):
+        '''
+        Test index with login and instances of all related models.
+        '''
+
         user = User.objects.get(username='user_5')
         self.client.force_login(user)
 
@@ -276,6 +281,15 @@ class TestViews(TestCase):
         self.assertContains(response, 'Cards', count=1)
         self.assertContains(response, 'Orders', count=1)
         self.assertContains(response, 'Reviews', count=1)
+
+    def test_index_no_login(self):
+        '''
+        Test index with no login.
+        '''
+
+        response = self.client.get('/account/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/login/?next=/account/')
 
     def test_register(self):
         '''
@@ -300,7 +314,7 @@ class TestViews(TestCase):
 
     def test_register_post(self):
         '''
-        Test register using POST.
+        Test register using POST data.
         '''
 
         response = self.client.post(
@@ -316,6 +330,133 @@ class TestViews(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, '/')
 
+        # test email verification
+
         user = User.objects.get(username='user_7')
         self.assertEqual(user.first_name, 'name_7')
+        self.assertTrue(user.check_password('password_7'))
         self.assertEqual(user.email, 'user_7@example.com')
+
+    def test_register_invalid_post(self):
+        '''
+        Test register using invalid POST data.
+        '''
+
+        response = self.client.post(
+            '/account/register/',
+            {
+                'username': '!@#$%^&*()',
+                'first_name': 'name_7',
+                'password0': 'password_7',
+                'password1': 'password_7',
+                'email': '!@#$%^&*()_at_example.com',
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'error list')
+
+        self.assertIn('form', response.context)
+        errors = response.context['form'].errors
+        self.assertEqual(len(errors), 3)
+
+    def test_login(self):
+        '''
+        Test login using GET.
+        '''
+
+        response = self.client.get('/account/login/')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('form', response.context)
+
+    def test_login_with_login(self):
+        '''
+        Test login with login using GET.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/login/')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('form', response.context)
+
+    def test_login_post(self):
+        '''
+        Test login using POST data.
+        '''
+
+        response = self.client.post(
+            '/account/login/',
+            {
+                'username': 'user_1',
+                'password': 'password_1',
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        user = get_user(self.client)
+        self.assertEqual(user.username, 'user_1')
+        self.assertEqual(user.first_name, 'name_1')
+        self.assertTrue(user.check_password('password_1'))
+
+    def test_login_post_with_login(self):
+        '''
+        Test login with login using POST data.
+        '''
+
+        user = User.objects.get(username='user_2')
+        self.client.force_login(user)
+
+        response = self.client.post(
+            '/account/login/',
+            {
+                'username': 'user_1',
+                'password': 'password_1',
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        user = get_user(self.client)
+        self.assertEqual(user.username, 'user_1')
+        self.assertEqual(user.first_name, 'name_1')
+        self.assertTrue(user.check_password('password_1'))
+
+    def test_login_post_with_next(self):
+        '''
+        Test login with next query parameter using POST data.
+        '''
+
+        response = self.client.post(
+            '/account/login/?next=/account/',
+            {
+                'username': 'user_1',
+                'password': 'password_1',
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/')
+
+        user = get_user(self.client)
+        self.assertEqual(user.username, 'user_1')
+        self.assertEqual(user.first_name, 'name_1')
+        self.assertTrue(user.check_password('password_1'))
+
+    def test_login_invalid_post(self):
+        '''
+        Test login using invalid POST data.
+        '''
+
+        response = self.client.post(
+            '/account/login/',
+            {
+                'username': 'user_2',
+                'password': 'password_1',
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('form', response.context)
+
+        errors = response.context['form'].errors
+        self.assertEqual(len(errors), 1)
