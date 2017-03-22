@@ -797,7 +797,7 @@ class TestViews(TestCase):
 
         response = self.client.get('/commerce/checkout/')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('form' in response.context)
+        self.assertIn('form', response.context)
         self.assertContains(response, 'type="radio"', count=2)
 
         cart = self.client.session['cart']
@@ -817,7 +817,7 @@ class TestViews(TestCase):
 
         response = self.client.get('/commerce/checkout/')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('form' not in response.context)
+        self.assertNotIn('form', response.context)
         self.assertContains(response, 'error list', count=1)
         self.assertContains(response, 'Cart is empty.', count=1)
 
@@ -845,7 +845,7 @@ class TestViews(TestCase):
             },
         )
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('form' not in response.context)
+        self.assertNotIn('form', response.context)
         self.assertContains(response, 'error list', count=1)
         self.assertContains(response, 'Cart is empty.', count=1)
 
@@ -873,7 +873,7 @@ class TestViews(TestCase):
             },
         )
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('form' in response.context)
+        self.assertIn('form', response.context)
         self.assertContains(response, 'type="radio"', count=2)
         self.assertContains(response, 'error list', count=1)
         self.assertContains(response, 'value="210"', count=1)
@@ -902,7 +902,7 @@ class TestViews(TestCase):
             },
         )
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('form' in response.context)
+        self.assertIn('form', response.context)
         self.assertContains(response, 'type="radio"', count=2)
         self.assertContains(response, 'error list', count=2)
         self.assertContains(response, 'value="210"', count=1)
