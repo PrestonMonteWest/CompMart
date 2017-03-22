@@ -19,7 +19,6 @@ def get_products(session):
             products[pk] = Product.active_objects.get(pk=pk)
         except Product.DoesNotExist:
             del cart[pk]
-            session.modified = True
             errors.append(
                 ValidationError(
                     'A product has been removed from your cart '
@@ -95,8 +94,6 @@ def add_product(request, pk):
         elif pk not in cart and stock > 0:
             cart[pk] = 1
 
-        request.session.modified = True
-
     url = request.GET.get('next', reverse('index'))
     return redirect(url)
 
@@ -104,7 +101,6 @@ def delete_product(request, pk):
     cart = get_cart(request.session)
     if pk in cart:
         del cart[pk]
-        request.session.modified = True
 
     url = request.GET.get('next', reverse('index'))
     return redirect(url)
@@ -136,7 +132,6 @@ def cart(request):
 
             if value >= 1:
                 cart[key] = value
-                request.session.modified = True
 
         if checkout and cart:
             return redirect(reverse('commerce:checkout'))
@@ -234,7 +229,6 @@ def checkout(request):
         else:
             # charge credit card
             cart.clear()
-            request.session.modified = True
             return redirect(reverse('commerce:thank_you', args=(order.pk,)))
 
     return render(request, 'commerce/checkout.html', {'form': form})
