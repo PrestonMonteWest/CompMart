@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from fernet_fields import EncryptedTextField
 
+
 class AddressBase(models.Model):
     class Meta:
         abstract = True
@@ -71,6 +72,7 @@ class AddressBase(models.Model):
     state = models.CharField(max_length=2, choices=STATES)
     zip_code = models.CharField('ZIP code', max_length=5)
 
+
 class Address(AddressBase):
     class Meta:
         ordering = ('street', 'city', 'state')
@@ -90,6 +92,7 @@ class Address(AddressBase):
             state=self.state,
             zip_code=self.zip_code
         )
+
 
 class CreditCard(models.Model):
     class Meta:

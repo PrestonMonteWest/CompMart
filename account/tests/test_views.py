@@ -223,6 +223,7 @@ class TestViews(TestCase):
             rating=50,
         )
 
+    ### Account Navigation Tests ###
     def test_index_no_address_no_card_no_order_no_review(self):
         user = User.objects.get(username='user_1')
         self.client.force_login(user)
@@ -267,6 +268,7 @@ class TestViews(TestCase):
         self.assertContains(response, 'Orders', count=1)
         self.assertNotContains(response, 'Reviews')
 
+    ### Index Tests ###
     def test_index(self):
         '''
         Test index with login and instances of all related models.
@@ -291,6 +293,7 @@ class TestViews(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, '/account/login/?next=/account/')
 
+    ### Register Tests ###
     def test_register(self):
         '''
         Test register using GET.
@@ -359,6 +362,7 @@ class TestViews(TestCase):
         errors = response.context['form'].errors
         self.assertEqual(len(errors), 3)
 
+    ### Login Tests ###
     def test_login(self):
         '''
         Test login using GET.
@@ -461,6 +465,7 @@ class TestViews(TestCase):
         errors = response.context['form'].errors
         self.assertEqual(len(errors), 1)
 
+    ### Logout Tests ###
     def test_logout(self):
         '''
         Test logout with login using GET.
@@ -523,5 +528,206 @@ class TestViews(TestCase):
         cart = self.client.session['cart']
         self.assertEqual(cart['1'], 3)
 
+    ### Address List Tests ###
     def test_address_list(self):
-        pass
+        '''
+        Test address list view with login and one address.
+        '''
+
+        user = User.objects.get(username='user_2')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/addresses/')
+        self.assertEqual(response.status_code, 200)
+
+        address = user.addresses.first()
+        self.assertContains(response, str(address).upper())
+
+    def test_address_list_no_login(self):
+        '''
+        Test address list view with no login.
+        '''
+
+        url = '/account/addresses/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/login/?next=' + url)
+
+    def test_address_list_no_addresses(self):
+        '''
+        Test address list view with login and no addresses.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/addresses/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_address_list_two_addresses(self):
+        '''
+        Test address list view with login and two addresses.
+        '''
+
+        user = User.objects.get(username='user_6')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/addresses/')
+        self.assertEqual(response.status_code, 200)
+
+        addresses = user.addresses.all()
+        for address in addresses:
+            self.assertContains(response, str(address).upper())
+
+    ### Card List Tests ###
+    def test_card_list(self):
+        '''
+        Test card list view with login and one card.
+        '''
+
+        user = User.objects.get(username='user_3')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/cards/')
+        self.assertEqual(response.status_code, 200)
+
+        card = user.cards.first()
+        self.assertContains(response, str(card))
+
+    def test_card_list_no_login(self):
+        '''
+        Test card list view with no login.
+        '''
+
+        url = '/account/cards/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/login/?next=' + url)
+
+    def test_card_list_no_cards(self):
+        '''
+        Test card list view with login and no cards.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/cards/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_card_list_two_cards(self):
+        '''
+        Test card list view with login and two cards.
+        '''
+
+        user = User.objects.get(username='user_6')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/cards/')
+        self.assertEqual(response.status_code, 200)
+
+        cards = user.cards.all()
+        for card in cards:
+            self.assertContains(response, str(card))
+
+    ### Order List Tests ###
+    def test_order_list(self):
+        '''
+        Test order list view with login and one order.
+        '''
+
+        user = User.objects.get(username='user_4')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/orders/')
+        self.assertEqual(response.status_code, 200)
+
+        order = user.orders.first()
+        self.assertContains(response, str(order))
+
+    def test_order_list_no_login(self):
+        '''
+        Test order list view with no login.
+        '''
+
+        url = '/account/orders/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/login/?next=' + url)
+
+    def test_order_list_no_orders(self):
+        '''
+        Test order list view with login and no orders.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/orders/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_order_list_two_orders(self):
+        '''
+        Test order list view with login and two orders.
+        '''
+
+        user = User.objects.get(username='user_6')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/orders/')
+        self.assertEqual(response.status_code, 200)
+
+        orders = user.orders.all()
+        for order in orders:
+            self.assertContains(response, str(order))
+
+    ### Review List Tests ###
+    def test_review_list(self):
+        '''
+        Test review list view with login and one review.
+        '''
+
+        user = User.objects.get(username='user_5')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/reviews/')
+        self.assertEqual(response.status_code, 200)
+
+        review = user.reviews.first()
+        self.assertContains(response, str(review))
+
+    def test_review_list_no_login(self):
+        '''
+        Test review list view with no login.
+        '''
+
+        url = '/account/reviews/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/login/?next=' + url)
+
+    def test_review_list_no_reviews(self):
+        '''
+        Test review list view with login and no reviews.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/reviews/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_review_list_two_reviews(self):
+        '''
+        Test review list view with login and two reviews.
+        '''
+
+        user = User.objects.get(username='user_6')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/reviews/')
+        self.assertEqual(response.status_code, 200)
+
+        reviews = user.reviews.all()
+        for review in reviews:
+            self.assertContains(response, str(review))
