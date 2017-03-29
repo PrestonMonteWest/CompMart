@@ -731,3 +731,258 @@ class TestViews(TestCase):
         reviews = user.reviews.all()
         for review in reviews:
             self.assertContains(response, str(review))
+
+    ### Delete Address Tests ###
+    def test_delete_address_get(self):
+        '''
+        Test delete address view with login and one address using GET.
+        '''
+
+        user = User.objects.get(username='user_2')
+        self.client.force_login(user)
+
+        address = user.addresses.first()
+        response = self.client.get(
+            '/account/addresses/delete_address/{}/'.format(
+                address.id
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_address_post(self):
+        '''
+        Test delete address view with login and one address using POST.
+        '''
+
+        user = User.objects.get(username='user_2')
+        self.client.force_login(user)
+
+        address = user.addresses.first()
+        response = self.client.post(
+            '/account/addresses/delete_address/{}/'.format(
+                address.id
+            )
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/')
+        self.assertEqual(user.addresses.count(), 0)
+
+    def test_delete_address_post_two_addresses(self):
+        '''
+        Test delete address view with login and two addresses using POST.
+        '''
+
+        user = User.objects.get(username='user_6')
+        self.client.force_login(user)
+
+        address = user.addresses.first()
+        response = self.client.post(
+            '/account/addresses/delete_address/{}/'.format(
+                address.id
+            )
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/addresses/')
+        self.assertEqual(user.addresses.count(), 1)
+
+    def test_delete_address_no_login(self):
+        '''
+        Test delete address view with no login.
+        '''
+
+        url = '/account/addresses/delete_address/1/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/login/?next=' + url)
+
+    def test_delete_address_get_invalid_pk(self):
+        '''
+        Test delete address view with login and invalid pk using GET.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/addresses/delete_address/1/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_address_post_invalid_pk(self):
+        '''
+        Test delete address view with login and invalid pk using POST.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.post('/account/addresses/delete_address/1/')
+        self.assertEqual(response.status_code, 404)
+
+    ### Delete Card Tests ###
+    def test_delete_card_get(self):
+        '''
+        Test delete card view with login and one card using GET.
+        '''
+
+        user = User.objects.get(username='user_3')
+        self.client.force_login(user)
+
+        card = user.cards.first()
+        response = self.client.get(
+            '/account/cards/delete_card/{}/'.format(
+                card.id
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_card_post(self):
+        '''
+        Test delete card view with login and one card using POST.
+        '''
+
+        user = User.objects.get(username='user_3')
+        self.client.force_login(user)
+
+        card = user.cards.first()
+        response = self.client.post(
+            '/account/cards/delete_card/{}/'.format(
+                card.id
+            )
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/')
+        self.assertEqual(user.cards.count(), 0)
+
+    def test_delete_card_post_two_cards(self):
+        '''
+        Test delete card view with login and two cards using POST.
+        '''
+
+        user = User.objects.get(username='user_6')
+        self.client.force_login(user)
+
+        card = user.cards.first()
+        response = self.client.post(
+            '/account/cards/delete_card/{}/'.format(
+                card.id
+            )
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/cards/')
+        self.assertEqual(user.cards.count(), 1)
+
+    def test_delete_card_no_login(self):
+        '''
+        Test delete card view with no login.
+        '''
+
+        url = '/account/cards/delete_card/1/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/login/?next=' + url)
+
+    def test_delete_card_get_invalid_pk(self):
+        '''
+        Test delete card view with login and invalid pk using GET.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/cards/delete_card/1/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_card_post_invalid_pk(self):
+        '''
+        Test delete card view with login and invalid pk using POST.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.post('/account/cards/delete_card/1/')
+        self.assertEqual(response.status_code, 404)
+
+    ### Delete Review Tests ###
+    def test_delete_review_get(self):
+        '''
+        Test delete review view with login and one review using GET.
+        '''
+
+        user = User.objects.get(username='user_5')
+        self.client.force_login(user)
+
+        review = user.reviews.first()
+        response = self.client.get(
+            '/account/reviews/delete_review/{}/'.format(
+                review.id
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_review_post(self):
+        '''
+        Test delete review view with login and one review using POST.
+        '''
+
+        user = User.objects.get(username='user_5')
+        self.client.force_login(user)
+
+        review = user.reviews.first()
+        response = self.client.post(
+            '/account/reviews/delete_review/{}/'.format(
+                review.id
+            )
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/')
+        self.assertEqual(user.reviews.count(), 0)
+
+    def test_delete_review_post_two_reviews(self):
+        '''
+        Test delete review view with login and two reviews using POST.
+        '''
+
+        user = User.objects.get(username='user_6')
+        self.client.force_login(user)
+
+        review = user.reviews.first()
+        response = self.client.post(
+            '/account/reviews/delete_review/{}/'.format(
+                review.id
+            )
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/reviews/')
+        self.assertEqual(user.reviews.count(), 1)
+
+    def test_delete_review_no_login(self):
+        '''
+        Test delete review view with no login.
+        '''
+
+        url = '/account/reviews/delete_review/1/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/account/login/?next=' + url)
+
+    def test_delete_review_get_invalid_pk(self):
+        '''
+        Test delete review view with login and invalid pk using GET.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.get('/account/reviews/delete_review/1/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_review_post_invalid_pk(self):
+        '''
+        Test delete review view with login and invalid pk using POST.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+
+        response = self.client.post('/account/reviews/delete_review/1/')
+        self.assertEqual(response.status_code, 404)

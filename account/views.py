@@ -109,7 +109,7 @@ class DeleteAddress(generic.DeleteView):
         address_count = request.user.addresses.count()
 
         if address_count:
-            url = reverse('account:reviews')
+            url = reverse('account:addresses')
         else:
             url = reverse('account:index')
 
