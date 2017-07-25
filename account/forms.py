@@ -84,20 +84,19 @@ class AddressForm(forms.ModelForm):
         fields = ('street', 'city', 'state', 'zip_code')
 
 class CreditCardForm(forms.ModelForm):
+    number = forms.CharField(label='Card Number', min_length=13, max_length=19)
+
     class Meta:
         model = CreditCard
-        fields = ('card_number', 'holder_name', 'expiration_date')
-        widgets = {
-            'card_number': forms.TextInput,
-            'expiration_date': MonthYearWidget,
-        }
+        fields = ('holder_name', 'expiration_date')
+        widgets = {'expiration_date': MonthYearWidget}
 
     @staticmethod
-    def is_luhn(card_number):
-        if len(card_number) < 2:
+    def is_luhn(number):
+        if len(number) < 2:
             raise ValueError('Card number is too short.')
 
-        digits = list(map(int, card_number))
+        digits = list(map(int, number))
         total = sum(digits[-1::-2])
         even_digits = digits[-2::-2]
         for digit in even_digits:
@@ -107,29 +106,26 @@ class CreditCardForm(forms.ModelForm):
         return total % 10 == 0
 
     @staticmethod
-    def get_card_type(card_number):
-        if card_number[0] == '4':
+    def get_card_type(number):
+        if number[0] == '4':
             return 'Visa'
-        elif card_number[:2] in ('34', '37'):
+        elif number[:2] in ('34', '37'):
             return 'American Express'
-        elif card_number[:2] in ('51', '52', '53', '54', '55'):
+        elif number[:2] in ('51', '52', '53', '54', '55'):
             return 'MasterCard'
         else:
             raise forms.ValidationError('Unsupported card entered.')
 
-    def clean_card_number(self):
-        card_number = self.cleaned_data['card_number']
+    def clean_number(self):
+        number = self.cleaned_data['number']
 
-        if not card_number.isdigit():
+        if not number.isdigit():
             raise forms.ValidationError('Card number must be numeric.')
 
-        if len(card_number) < 15 or len(card_number) > 16:
-            raise forms.ValidationError('Invalid number of digits entered.')
-
-        if not self.is_luhn(card_number):
+        if not self.is_luhn(number):
             raise forms.ValidationError('Invalid card number entered.')
 
-        return card_number
+        return number
 
     def clean_expiration_date(self):
         exp_date = self.cleaned_data['expiration_date']
@@ -145,11 +141,20 @@ class CreditCardForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        card_number = cleaned_data.get('card_number')
-        if card_number:
-            cleaned_data['card_type'] = self.get_card_type(card_number)
+        number = cleaned_data.get('number')
+        if number:
+            cleaned_data['card_type'] = self.get_card_type(number)
 
         return cleaned_data
+
+    '''def save(self, commit=True):
+        card = super().save(commit=False)
+        card.number = self.cleaned_data['number']
+
+        if commit:
+            card.save()
+
+        return card'''
 
 class MyUserCreationForm(UserCreationForm):
     class Meta:

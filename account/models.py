@@ -1,6 +1,6 @@
-from django.db import models
+from django.db import models, IntegrityError
 from django.conf import settings
-from fernet_fields import EncryptedTextField
+from cryptography.fernet import Fernet
 
 
 class AddressBase(models.Model):
@@ -95,18 +95,38 @@ class Address(AddressBase):
 
 
 class CreditCard(models.Model):
-    class Meta:
-        unique_together = (('user', 'card_number'),)
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         models.CASCADE,
         related_name='cards'
     )
-    card_number = EncryptedTextField()
+    _number = models.BinaryField(db_column='number')
     card_type = models.CharField(max_length=20)
     holder_name = models.CharField(max_length=50)
     expiration_date = models.DateField()
+
+    @property
+    def number(self):
+        f = Fernet(settings.SECRET_KEY[:32].encode('utf-8'))
+        return f.decrypt(self._number).decode('utf-8')
+
+    @number.setter
+    def number(self, card_number):
+        f = Fernet(settings.SECRET_KEY[:32].encode('utf-8'))
+        if not self.is_unique(self.user, card_number):
+            raise IntegrityError()
+
+        self._number = f.encrypt(card_number)
+
+    @staticmethod
+    def is_unique(user, card_number):
+        cards = user.cards.all()
+
+        for card in cards:
+            if card.number == card_number:
+                return False
+
+        return True
 
     def __str__(self):
         return '{card_type} ending in {last_four} - {name}'.format(

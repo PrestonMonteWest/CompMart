@@ -23,7 +23,7 @@ LOGIN_URL = 'account:login'
 
 SITE_ID = 2
 
-ADMINS = [('Preston', 'prestonmontewest@gmail.com')]
+ADMINS = [('prestonmontewest', 'prestonmontewest@gmail.com')]
 
 INTERNAL_IPS = ['127.0.0.1']
 
@@ -94,12 +94,12 @@ WSGI_APPLICATION = 'compmart.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': 'compmart',
         'USER': 'compmartuser',
         'PASSWORD': '247Pw918!2157',
         'HOST': 'localhost',
-        'PORT': '5432',
+        'PORT': '3306',
     },
 }
 
