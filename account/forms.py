@@ -9,6 +9,7 @@ from django.utils.dates import MONTHS
 from django.utils.safestring import mark_safe
 from .models import Address, CreditCard
 
+
 class MonthYearWidget(Widget):
     '''
     A Widget that splits date input into two <select> boxes for month and year,
@@ -19,7 +20,7 @@ class MonthYearWidget(Widget):
     month_field = '%s_month'
     year_field = '%s_year'
 
-    date_re = re.compile(r'(\d{4})-(\d\d?)-(\d\d?)$')
+    date_re = re.compile(r'(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$')
 
     def __init__(self, attrs=None, years=None, required=True):
         self.attrs = attrs or {}
@@ -53,7 +54,7 @@ class MonthYearWidget(Widget):
             month_choices.insert(0, self.none_value)
             year_choices.insert(0, self.none_value)
 
-        local_attrs = self.build_attrs(id=self.month_field % id_)
+        local_attrs = self.build_attrs({'id': self.month_field % id_})
         s = Select(choices=month_choices)
         select_html = s.render(self.month_field % name, month_val, local_attrs)
         output.append(select_html)
@@ -78,10 +79,12 @@ class MonthYearWidget(Widget):
 
         return data.get(name)
 
+
 class AddressForm(forms.ModelForm):
     class Meta:
         model = Address
         fields = ('street', 'city', 'state', 'zip_code')
+
 
 class CreditCardForm(forms.ModelForm):
     number = forms.CharField(label='Card Number', min_length=13, max_length=19)
@@ -155,6 +158,7 @@ class CreditCardForm(forms.ModelForm):
             card.save()
 
         return card'''
+
 
 class MyUserCreationForm(UserCreationForm):
     class Meta:
