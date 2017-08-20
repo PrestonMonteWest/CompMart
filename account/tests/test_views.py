@@ -55,7 +55,7 @@ class TestViews(TestCase):
         )
         user.cards.create(
             pk=1,
-            number='',
+            number='1',
             card_type='type_1',
             holder_name='name_1',
             expiration_date=datetime.date.today(),
@@ -75,7 +75,7 @@ class TestViews(TestCase):
         )
         card = user.cards.create(
             pk=2,
-            number='',
+            number='2',
             card_type='type_2',
             holder_name='name_2',
             expiration_date=datetime.date.today(),
@@ -111,7 +111,7 @@ class TestViews(TestCase):
         )
         card = user.cards.create(
             pk=3,
-            number='',
+            number='3',
             card_type='type_3',
             holder_name='name_3',
             expiration_date=datetime.date.today(),
@@ -162,7 +162,7 @@ class TestViews(TestCase):
         )
         user.cards.create(
             pk=4,
-            number='',
+            number='4',
             card_type='type_4',
             holder_name='name_4',
             expiration_date=datetime.date.today(),
