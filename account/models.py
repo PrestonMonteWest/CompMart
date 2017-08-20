@@ -2,6 +2,8 @@ from django.db import models, IntegrityError
 from django.conf import settings
 from cryptography.fernet import Fernet
 
+import base64
+
 
 class AddressBase(models.Model):
     class Meta:
@@ -107,20 +109,19 @@ class CreditCard(models.Model):
 
     @property
     def number(self):
-        f = Fernet(settings.SECRET_KEY[:32].encode('utf-8'))
+        f = Fernet(base64.b64encode(settings.SECRET_KEY[:32].encode('utf-8')))
         return f.decrypt(self._number).decode('utf-8')
 
     @number.setter
     def number(self, card_number):
-        f = Fernet(settings.SECRET_KEY[:32].encode('utf-8'))
-        if not self.is_unique(self.user, card_number):
+        if not self.is_unique(card_number):
             raise IntegrityError()
 
-        self._number = f.encrypt(card_number)
+        f = Fernet(base64.b64encode(settings.SECRET_KEY[:32].encode('utf-8')))
+        self._number = f.encrypt(card_number.encode('utf-8'))
 
-    @staticmethod
-    def is_unique(user, card_number):
-        cards = user.cards.all()
+    def is_unique(self, card_number):
+        cards = self.user.cards.all()
 
         for card in cards:
             if card.number == card_number:
@@ -131,6 +132,6 @@ class CreditCard(models.Model):
     def __str__(self):
         return '{card_type} ending in {last_four} - {name}'.format(
             card_type=self.card_type,
-            last_four=self.card_number[-4:],
+            last_four=self.number[-4:],
             name=self.holder_name
         )
