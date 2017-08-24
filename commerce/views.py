@@ -59,8 +59,8 @@ class Index(ListView):
         else:
             self.page = 1
 
-        self.num_pages = (self.num_products // self.page_len)
-        self.num_pages += (1 if self.num_products % self.page_len != 0 else 0)
+        self.num_pages = self.num_products // self.page_len
+        self.num_pages += 1 if self.num_products % self.page_len != 0 else 0
 
         if self.num_pages != 0 and self.page > self.num_pages:
             raise Http404()

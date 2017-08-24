@@ -5,6 +5,533 @@ from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 from .. import models
 
+class NavTestCase(TestCase):
+    def setUp(self):
+        User.objects.create_user(
+            username='user_1',
+            password='password_1',
+        )
+        user = User.objects.create_user(
+            username='user_2',
+            password='password_2',
+            is_staff=True,
+        )
+
+    def test_no_login(self):
+        '''
+        Test navigation bar with no login session.
+        '''
+
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Home', count=1)
+        self.assertContains(response, 'Cart', count=1)
+        self.assertContains(response, 'Login', count=1)
+        self.assertContains(response, 'Register', count=1)
+        self.assertNotContains(response, 'Logout')
+        self.assertNotContains(response, 'Account')
+        self.assertNotContains(response, 'Admin')
+
+    def test_login(self):
+        '''
+        Test navigation bar with normal login session.
+        '''
+
+        user = User.objects.get(username='user_1')
+        self.client.force_login(user)
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Home', count=1)
+        self.assertContains(response, 'Cart', count=1)
+        self.assertNotContains(response, 'Login')
+        self.assertNotContains(response, 'Register')
+        self.assertContains(response, 'Logout', count=1)
+        self.assertContains(response, 'Account', count=1)
+        self.assertNotContains(response, 'Admin')
+
+    def test_admin_login(self):
+        '''
+        Test navigation bar with admin login session.
+        '''
+
+        user = User.objects.get(username='user_2')
+        self.client.force_login(user)
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Home', count=1)
+        self.assertContains(response, 'Cart', count=1)
+        self.assertNotContains(response, 'Login')
+        self.assertNotContains(response, 'Register')
+        self.assertContains(response, 'Logout', count=1)
+        self.assertContains(response, 'Account', count=1)
+        self.assertContains(response, 'Admin', count=1)
+
+class IndexTestCase(TestCase):
+    def setUp(self):
+        prices = [
+            '5.99',
+            '24.75',
+            '19.34',
+            '9.23',
+            '117.06',
+            '29.98',
+            '87.34',
+            '4.78',
+            '0.67',
+            '79.98',
+            '30.00',
+            '69.47',
+            '7.99',
+            '403.01',
+            '71.59',
+        ]
+
+        stocks = [
+            45,
+            3,
+            0,
+            17,
+            98,
+            335,
+            28,
+            49,
+            15,
+            87,
+            164,
+            52,
+            11,
+            96,
+            4,
+        ]
+
+        self.page_len = 12
+
+        for i in range(0, len(prices)):
+            models.Product.objects.create(
+                name='product_%d' % (i + 1),
+                price=prices[i],
+                description='',
+                stock=stocks[i],
+                image='product_%d.jpg' % (i + 1),
+            )
+
+        product = models.Product.objects.get(name='product_15')
+        product.discontinued = True
+        product.save()
+
+    def test_no_query(self):
+        '''
+        Test index with no query.
+        '''
+
+        products = models.Product.active_objects.all()[:self.page_len]
+        response = self.client.get('/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(response.context['products'], map(repr, products))
+        self.assertContains(response, 'pagination', count=1)
+
+    def test_query_one_keyword(self):
+        '''
+        Test index with one keyword query,
+        which displays two products.
+        '''
+
+        products = [models.Product.active_objects.get(name='product_10')]
+        response = self.client.get('/?query=10')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(
+            response.context['products'],
+            map(repr, products),
+        )
+        self.assertNotContains(response, 'pagination')
+
+    def test_query_two_keywords(self):
+        '''
+        Test index with two keywords query,
+        which displays three products.
+        '''
+
+        products = [
+            models.Product.active_objects.get(name='product_2'),
+            models.Product.active_objects.get(name='product_12'),
+            models.Product.active_objects.get(name='product_9'),
+        ]
+        response = self.client.get('/?query=2 9')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(
+            response.context['products'],
+            map(repr, products),
+            ordered=False,
+        )
+        self.assertNotContains(response, 'pagination')
+
+    def test_query_no_result(self):
+        '''
+        Test index with one keyword query,
+        which displays zero products.
+        '''
+
+        products = []
+        response = self.client.get('/?query=product_15')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(
+            response.context['products'],
+            map(repr, products),
+        )
+        self.assertContains(response, 'No products found!')
+        self.assertNotContains(response, 'pagination')
+
+    def test_page_two(self):
+        '''
+        Test index on page two.
+        '''
+
+        products = models.Product.active_objects.all()[self.page_len:]
+        response = self.client.get('/2/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(
+            response.context['products'],
+            map(repr, products),
+        )
+        self.assertContains(response, 'pagination', count=1)
+
+    def test_page_two_query_one_keyword(self):
+        '''
+        Test index on page two with one keyword query.
+        '''
+
+        products = models.Product.active_objects.all()[self.page_len:]
+        response = self.client.get('/2/?query=product')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertQuerysetEqual(
+            response.context['products'],
+            map(repr, products),
+        )
+        self.assertContains(response, 'pagination', count=1)
+
+    def test_404(self):
+        '''
+        Test index on page three, which displays 404 error.
+        '''
+
+        response = self.client.get('/3/')
+        self.assertEqual(response.status_code, 404)
+
+class DetailsTestCase(TestCase):
+    def setUp(self):
+        models.Product.objects.create(
+            pk=1,
+            name='product_1',
+            price='0.99',
+            description='product_1 description',
+            stock=5,
+            image='product_1.jpg',
+        )
+
+        models.Product.objects.create(
+            pk=2,
+            name='product_2',
+            price='0.99',
+            description='',
+            stock=5,
+            image='product_2.jpg',
+        )
+
+        models.Product.objects.create(
+            pk=3,
+            name='product_3',
+            price='0.99',
+            description='',
+            stock=5,
+            image='product_3.jpg',
+            discontinued=True,
+        )
+
+        models.Product.objects.create(
+            pk=4,
+            name='product_4',
+            price='0.99',
+            description='',
+            stock=0,
+            image='product_4.jpg',
+        )
+
+    def test_product(self):
+        '''
+        Test details with active product.
+        '''
+
+        product = models.Product.active_objects.get(pk=1)
+        response = self.client.get('/commerce/product/1/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['product'], product)
+        self.assertContains(response, product.description, count=1)
+
+    def test_product_no_description(self):
+        '''
+        Test details with active, nondescript product.
+        '''
+
+        product = models.Product.active_objects.get(pk=2)
+        response = self.client.get('/commerce/product/2/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['product'], product)
+        self.assertContains(response, 'No Description', count=1)
+
+    def test_product_discontinued(self):
+        '''
+        Test details with discontinued product.
+        '''
+
+        product = models.Product.objects.get(pk=3)
+        response = self.client.get('/commerce/product/3/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['product'], product)
+        self.assertNotContains(response, 'Add')
+
+    def test_product_out_of_stock(self):
+        '''
+        Test details with out-of-stock product.
+        '''
+
+        product = models.Product.objects.get(pk=4)
+        response = self.client.get('/commerce/product/4/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['product'], product)
+        self.assertNotContains(response, 'Add')
+
+    def test_invalid_pk(self):
+        '''
+        Test details with nonexistent product,
+        which displays 404 error.
+        '''
+
+        response = self.client.get('/commerce/product/5/')
+        self.assertEqual(response.status_code, 404)
+
+class AddProductTestCase(TestCase):
+    def setUp(self):
+        models.Product.objects.create(
+            pk=1,
+            name='product_1',
+            price='0.99',
+            description='',
+            stock=5,
+            image='product_1.jpg',
+        )
+
+        models.Product.objects.create(
+            pk=2,
+            name='product_2',
+            price='0.99',
+            description='',
+            stock=5,
+            image='product_2.jpg',
+            discontinued=True,
+        )
+
+        models.Product.objects.create(
+            pk=3,
+            name='product_3',
+            price='0.99',
+            description='',
+            stock=0,
+            image='product_3.jpg',
+        )
+
+    def test_product_no_cart(self):
+        '''
+        Test add_product with active product and no cart.
+        '''
+
+        response = self.client.get('/commerce/add_product/1/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart['1'], 1)
+
+    def test_product_cart(self):
+        '''
+        Test add_product with active product and cart.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'1': 3}
+        session.save()
+
+        response = self.client.get('/commerce/add_product/1/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart['1'], 4)
+
+    def test_product_next(self):
+        '''
+        Test add_product with active product and next variable.
+        '''
+
+        url = '/commerce/product/1/'
+        response = self.client.get('/commerce/add_product/1/?next=' + url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, url)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart['1'], 1)
+
+    def test_product_discontinued(self):
+        '''
+        Test add_product with discontinued product.
+        '''
+
+        response = self.client.get('/commerce/add_product/2/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        cart = self.client.session.get('cart', None)
+        self.assertIs(cart, None)
+
+    def test_product_out_of_stock(self):
+        '''
+        Test add_product with out-of-stock product.
+        '''
+
+        response = self.client.get('/commerce/add_product/3/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        cart = self.client.session.get('cart', None)
+        self.assertIs(cart, None)
+
+    def test_product_over_stock(self):
+        '''
+        Test add_product with in-stock product,
+        but try to add one more than stock.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'1': 5}
+        session.save()
+
+        response = self.client.get('/commerce/add_product/1/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart['1'], 5)
+
+    def test_product_invalid_pk(self):
+        '''
+        Test add_product with nonexistent product.
+        '''
+
+        response = self.client.get('/commerce/add_product/4/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        cart = self.client.session.get('cart', None)
+        self.assertIs(cart, None)
+
+class DeleteProductTestCase(TestCase):
+    def setUp(self):
+        models.Product.objects.create(
+            pk=1,
+            name='product_1',
+            price='0.99',
+            description='',
+            stock=5,
+            image='product_1.jpg',
+        )
+
+        models.Product.objects.create(
+            pk=2,
+            name='product_2',
+            price='0.99',
+            description='',
+            stock=5,
+            image='product_2.jpg',
+            discontinued=True,
+        )
+
+        models.Product.objects.create(
+            pk=3,
+            name='product_3',
+            price='0.99',
+            description='',
+            stock=0,
+            image='product_3.jpg',
+        )
+
+    def test_product_with_cart(self):
+        '''
+        Test delete_product with active product and cart.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'1': 3}
+        session.save()
+
+        response = self.client.get('/commerce/delete_product/1/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_product_no_cart(self):
+        '''
+        Test delete_product with active product and no cart.
+        '''
+
+        response = self.client.get('/commerce/delete_product/1/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_product_next(self):
+        '''
+        Test delete_product with next variable.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'1': 3}
+        session.save()
+
+        url = '/commerce/cart/'
+        response = self.client.get('/commerce/delete_product/1/?next=' + url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, url)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_product_not_in_cart(self):
+        '''
+        Test delete_product with product not in cart.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'2': 1}
+        session.save()
+
+        response = self.client.get('/commerce/delete_product/1/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {'2': 1})
+
 class TestViews(TestCase):
     def setUp(self):
         User.objects.create_user(
@@ -116,329 +643,7 @@ class TestViews(TestCase):
         site.name = 'CompMart'
         site.save()
 
-    ### Navigation Tests ###
-    def test_nav_no_login(self):
-        '''
-        Test navigation bar with no login session.
-        '''
-
-        response = self.client.get('/')
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Home', count=1)
-        self.assertContains(response, 'Cart', count=1)
-        self.assertContains(response, 'Login', count=1)
-        self.assertContains(response, 'Register', count=1)
-        self.assertNotContains(response, 'Logout')
-        self.assertNotContains(response, 'Account')
-        self.assertNotContains(response, 'Admin')
-
-    def test_nav_login(self):
-        '''
-        Test navigation bar with login session.
-        '''
-
-        user = User.objects.get(username='user_1')
-        self.client.force_login(user)
-        response = self.client.get('/')
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Home', count=1)
-        self.assertContains(response, 'Cart', count=1)
-        self.assertNotContains(response, 'Login')
-        self.assertNotContains(response, 'Register')
-        self.assertContains(response, 'Logout', count=1)
-        self.assertContains(response, 'Account', count=1)
-        self.assertNotContains(response, 'Admin')
-
-    def test_nav_login_admin(self):
-        '''
-        Test navigation bar with admin login session.
-        '''
-
-        user = User.objects.get(username='user_2')
-        self.client.force_login(user)
-        response = self.client.get('/')
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Home', count=1)
-        self.assertContains(response, 'Cart', count=1)
-        self.assertNotContains(response, 'Login')
-        self.assertNotContains(response, 'Register')
-        self.assertContains(response, 'Logout', count=1)
-        self.assertContains(response, 'Account', count=1)
-        self.assertContains(response, 'Admin', count=1)
-
-    ### Index Tests ###
-    def test_index(self):
-        '''
-        Test index view with no query.
-        '''
-
-        products = models.Product.active_objects.all()[:self.page_len]
-        response = self.client.get('/')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(response.context['products'], map(repr, products))
-        self.assertContains(response, 'pagination', count=1)
-
-    def test_index_query_one_keyword(self):
-        '''
-        Test index view with query of one keyword,
-        which will display two products.
-        '''
-
-        products = [models.Product.active_objects.get(name='product_10')]
-        response = self.client.get('/?query=10')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(
-            response.context['products'],
-            map(repr, products),
-        )
-        self.assertNotContains(response, 'pagination')
-
-    def test_index_query_two_keywords(self):
-        '''
-        Test index view with query of two keywords,
-        which will display three products.
-        '''
-
-        products = [
-            models.Product.active_objects.get(name='product_2'),
-            models.Product.active_objects.get(name='product_12'),
-            models.Product.active_objects.get(name='product_9'),
-        ]
-        response = self.client.get('/?query=2 9')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(
-            response.context['products'],
-            map(repr, products),
-            ordered=False,
-        )
-        self.assertNotContains(response, 'pagination')
-
-    def test_index_query_no_result(self):
-        '''
-        Test index view with query of one keyword,
-        which will display zero products.
-        '''
-
-        products = []
-        response = self.client.get('/?query=product_0')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(
-            response.context['products'],
-            map(repr, products),
-        )
-        self.assertContains(response, 'No products found!')
-        self.assertNotContains(response, 'pagination')
-
-    def test_index_page_two(self):
-        '''
-        Test index view on page two.
-        '''
-
-        products = models.Product.active_objects.all()[self.page_len:]
-        response = self.client.get('/2/')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(
-            response.context['products'],
-            map(repr, products),
-        )
-        self.assertContains(response, 'pagination', count=1)
-
-    def test_index_404(self):
-        '''
-        Test index view on page three, which should return a 404 error.
-        '''
-
-        response = self.client.get('/3/')
-        self.assertEqual(response.status_code, 404)
-
-    def test_index_page_two_query_one_keyword(self):
-        '''
-        Test index view on page two with query of one keyword.
-        '''
-
-        products = models.Product.active_objects.all()[12:]
-        response = self.client.get('/2/?query=product')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(
-            response.context['products'],
-            map(repr, products),
-        )
-        self.assertContains(response, 'pagination', count=1)
-
-    ### Product Details Tests ###
-    def test_details(self):
-        '''
-        Test details view with active product.
-        '''
-
-        product = models.Product.active_objects.get(pk=1)
-        response = self.client.get('/commerce/product/1/')
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['product'], product)
-
-    def test_details_discontinued(self):
-        '''
-        Test details view with discontinued product.
-        '''
-
-        product = models.Product.objects.get(pk=15)
-        response = self.client.get('/commerce/product/15/')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['product'], product)
-        self.assertNotContains(response, 'Add')
-
-    def test_details_404_invalid_pk(self):
-        '''
-        Test details view with nonexistent product,
-        which should return a 404 error.
-        '''
-
-        response = self.client.get('/commerce/product/100/')
-        self.assertEqual(response.status_code, 404)
-
-    def test_details_out_of_stock(self):
-        '''
-        Test details view with out-of-stock product.
-        '''
-
-        product = models.Product.objects.get(pk=3)
-        response = self.client.get('/commerce/product/3/')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['product'], product)
-        self.assertNotContains(response, 'Add')
-
-    ### Add Product Tests ###
-    def test_add_product(self):
-        '''
-        Test add_product view with active product.
-        '''
-
-        response = self.client.get('/commerce/add_product/1/')
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/')
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart['1'], 1)
-
-    def test_add_product_next(self):
-        '''
-        Test add_product view with active product and next query.
-        '''
-
-        url = '/commerce/product/1/'
-        response = self.client.get('/commerce/add_product/1/?next=' + url)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, url)
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart['1'], 1)
-
-    def test_add_product_discontinued(self):
-        '''
-        Test add_product view with discontinued product.
-        '''
-
-        response = self.client.get('/commerce/add_product/15/')
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/')
-
-        cart = self.client.session.get('cart', None)
-        self.assertIs(cart, None)
-
-    def test_add_product_invalid_pk(self):
-        '''
-        Test add_product view with nonexistent product.
-        '''
-
-        response = self.client.get('/commerce/add_product/100/')
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/')
-
-        cart = self.client.session.get('cart', None)
-        self.assertIs(cart, None)
-
-    def test_add_product_out_of_stock(self):
-        '''
-        Test add_product view with out-of-stock product.
-        '''
-
-        response = self.client.get('/commerce/add_product/3/')
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/')
-
-        cart = self.client.session.get('cart', None)
-        self.assertIs(cart, None)
-
-    def test_add_product_over_stock(self):
-        '''
-        Test add_product view with in-stock product,
-        but try to add one more than stock.
-        add_product should gracefully fail.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'2': 3}
-        session.save()
-
-        response = self.client.get('/commerce/add_product/2/')
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/')
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart['2'], 3)
-
     ### Delete Product Tests ###
-    def test_delete_product_with_cart(self):
-        '''
-        Test delete_product view with cart.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'1': 3}
-        session.save()
-
-        response = self.client.get('/commerce/delete_product/1/')
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/')
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart, {})
-
-    def test_delete_product_with_cart_next(self):
-        '''
-        Test delete_product view with cart and next query.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'1': 3}
-        session.save()
-
-        url = '/commerce/cart/'
-        response = self.client.get('/commerce/delete_product/1/?next=' + url)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, url)
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart, {})
-
-    def test_delete_product_not_in_cart(self):
-        '''
-        Test delete_product view with active product not in cart.
-        '''
-
-        response = self.client.get('/commerce/delete_product/1/')
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/')
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart, {})
 
     ### Cart Tests ###
     def test_cart(self):

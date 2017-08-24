@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from .. import models
 
-class ProductTests(TestCase):
+class ProductTestCase(TestCase):
     def setUp(self):
         user_1 = User.objects.create_user(
             username='user_1',
