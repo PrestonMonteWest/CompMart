@@ -394,11 +394,7 @@ class AddProductTestCase(TestCase):
         '''
 
         response = self.client.get('/commerce/add_product/2/')
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/')
-
-        cart = self.client.session.get('cart', None)
-        self.assertIs(cart, None)
+        self.assertEqual(response.status_code, 404)
 
     def test_product_out_of_stock(self):
         '''
@@ -406,11 +402,7 @@ class AddProductTestCase(TestCase):
         '''
 
         response = self.client.get('/commerce/add_product/3/')
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/')
-
-        cart = self.client.session.get('cart', None)
-        self.assertIs(cart, None)
+        self.assertEqual(response.status_code, 404)
 
     def test_product_over_stock(self):
         '''
@@ -429,17 +421,21 @@ class AddProductTestCase(TestCase):
         cart = self.client.session['cart']
         self.assertEqual(cart['1'], 5)
 
-    def test_product_invalid_pk(self):
+    def test_product_nonexist_product(self):
         '''
         Test add_product with nonexistent product.
         '''
 
         response = self.client.get('/commerce/add_product/4/')
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/')
+        self.assertEqual(response.status_code, 404)
 
-        cart = self.client.session.get('cart', None)
-        self.assertIs(cart, None)
+    def test_product_nonnumeric_pk(self):
+        '''
+        Test add_product with nonnumeric primary key.
+        '''
+
+        response = self.client.get('/commerce/add_product/a/')
+        self.assertEqual(response.status_code, 404)
 
 class DeleteProductTestCase(TestCase):
     def setUp(self):
@@ -493,11 +489,7 @@ class DeleteProductTestCase(TestCase):
         '''
 
         response = self.client.get('/commerce/delete_product/1/')
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/')
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart, {})
+        self.assertEqual(response.status_code, 404)
 
     def test_product_next(self):
         '''
@@ -526,11 +518,381 @@ class DeleteProductTestCase(TestCase):
         session.save()
 
         response = self.client.get('/commerce/delete_product/1/')
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/')
+        self.assertEqual(response.status_code, 404)
 
         cart = self.client.session['cart']
         self.assertEqual(cart, {'2': 1})
+
+    def test_nonnumeric_pk(self):
+        '''
+        Test delete_product with nonnumeric primary key.
+        '''
+
+        response = self.client.get('/commerce/delete_product/a/')
+        self.assertEqual(response.status_code, 404)
+
+class CartTestCase(TestCase):
+    def setUp(self):
+        models.Product.objects.create(
+            pk=1,
+            name='product_1',
+            price='0.99',
+            description='',
+            stock=5,
+            image='product_1.jpg',
+        )
+
+        models.Product.objects.create(
+            pk=2,
+            name='product_2',
+            price='0.99',
+            description='',
+            stock=3,
+            image='product_2.jpg',
+        )
+
+        models.Product.objects.create(
+            pk=3,
+            name='product_3',
+            price='0.99',
+            description='',
+            stock=5,
+            image='product_3.jpg',
+            discontinued=True,
+        )
+
+        models.Product.objects.create(
+            pk=4,
+            name='product_4',
+            price='0.99',
+            description='',
+            stock=0,
+            image='product_4.jpg',
+        )
+
+    def test_cart_with_one_product(self):
+        '''
+        Test cart with one product.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'1': 3}
+        session.save()
+
+        response = self.client.get('/commerce/cart/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="3"', count=1)
+
+    def test_cart_with_two_products(self):
+        '''
+        Test cart with two products.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'1': 3, '2': 1}
+        session.save()
+
+        response = self.client.get('/commerce/cart/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="3"', count=1)
+        self.assertContains(response, 'value="1"', count=1)
+
+    def test_empty_cart(self):
+        '''
+        Test empty cart.
+        '''
+
+        response = self.client.get('/commmerce/cart/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Cart is empty.', count=1)
+
+    def test_empty_cart_valid_checkout(self):
+        '''
+        Test empty cart with valid data submitted using checkout.
+        '''
+
+        response = self.client.post(
+            '/commerce/cart/',
+            {'1': 3, '2': 1, 'checkout': ''},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/cart/')
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_empty_cart_invalid_checkout(self):
+        '''
+        Test empty cart with invalid data submitted using checkout.
+        '''
+
+        response = self.client.post(
+            '/commerce/cart/',
+            {'abc': 123, 'checkout': ''},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/cart/')
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_empty_cart_empty_checkout(self):
+        '''
+        Test empty cart with empty data submitted using checkout.
+        '''
+
+        response = self.client.post(
+            '/commerce/cart/',
+            {'checkout': ''},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/cart/')
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_empty_cart_valid_update(self):
+        '''
+        Test empty cart with valid data submitted using update.
+        '''
+
+        response = self.client.post(
+            '/commerce/cart/',
+            {'1': 3, '2': 1},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/cart/')
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_empty_cart_invalid_update(self):
+        '''
+        Test empty cart with invalid data submitted using update.
+        '''
+
+        response = self.client.post(
+            '/commerce/cart/',
+            {'abc': 123},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/cart/')
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_empty_cart_empty_update(self):
+        '''
+        Test empty cart with empty data submitted using update.
+        '''
+
+        response = self.client.post('/commerce/cart/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/cart/')
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_cart_valid_checkout(self):
+        '''
+        Test cart with valid data submitted using checkout.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'1': 2, '2': 1}
+        session.save()
+
+        response = self.client.post(
+            '/commerce/cart/',
+            {'1': 3, '2': 1, 'checkout': ''}
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/checkout/')
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart['1'], 3)
+        self.assertEqual(cart['2'], 1)
+
+    def test_cart_invalid_checkout(self):
+        '''
+        Test cart with invalid data submitted using checkout.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'1': 2, '2': 1}
+        session.save()
+
+        response = self.client.post(
+            '/commerce/cart/',
+            {'abc': 123, 'checkout': ''},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/cart/')
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart['1'], 2)
+        self.assertEqual(cart['2'], 1)
+
+    def test_cart_empty_checkout(self):
+        '''
+        Test cart with empty data submitted using checkout.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'1': 2, '2': 1}
+        session.save()
+
+        response = self.client.post(
+            '/commerce/cart/',
+            {'checkout': ''},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/cart/')
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart['1'], 2)
+        self.assertEqual(cart['2'], 1)
+
+    def test_cart_valid_update(self):
+        '''
+        Test cart with valid data submitted using update.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'1': 2, '2': 1}
+        session.save()
+
+        response = self.client.post(
+            '/commerce/cart/',
+            {'1': 3, '2': 1},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/cart/')
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart['1'], 3)
+        self.assertEqual(cart['2'], 1)
+
+    def test_cart_invalid_update(self):
+        '''
+        Test cart with invalid data submitted using update.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'1': 2, '2': 1}
+        session.save()
+
+        response = self.client.post(
+            '/commerce/cart/',
+            {'abc': 123},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/commerce/cart/')
+        cart = self.client.session['cart']
+        self.assertEqual(cart['1'], 2)
+        self.assertEqual(cart['2'], 1)
+
+    def test_cart_empty_update(self):
+        '''
+        Test cart with empty data submitted using update.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'1': 2, '2': 1}
+        session.save()
+
+        url = '/commerce/cart/'
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, url)
+        cart = self.client.session['cart']
+        self.assertEqual(cart['1'], 2)
+        self.assertEqual(cart['2'], 1)
+
+    def test_cart_valid_update_exceed_stock(self):
+        '''
+        Test cart with valid data, exceeding stock, submitted using update.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'2': 1}
+        session.save()
+
+        url = '/commerce/cart/'
+        response = self.client.post(url, {'2': 4})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, url)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart['2'], 3)
+
+    def test_cart_valid_checkout_exceed_stock(self):
+        '''
+        Test cart with valid data, exceeding stock, submitted using checkout.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'2': 1}
+        session.save()
+
+        url = '/commerce/checkout/'
+        response = self.client.post(
+            url,
+            {'2': 4, 'checkout': ''},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, url)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart['2'], 3)
+
+    def test_cart_discontinued_product(self):
+        '''
+        Test cart with discontinued product.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'3': 1}
+        session.save()
+
+        response = self.client.get('/commerce/cart/')
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'form')
+        self.assertContains(response, 'error list', count=1)
+        self.assertContains(response, 'Cart is empty.', count=1)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_cart_out_of_stock_product(self):
+        '''
+        Test cart with out-of-stock product.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'4': 1}
+        session.save()
+
+        response = self.client.post('/commerce/cart/')
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'form')
+        self.assertContains(response, 'error list', count=1)
+        self.assertContains(response, 'Cart is empty.', count=1)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
+
+    def test_cart_nonexist_product(self):
+        '''
+        Test cart with nonexistent product.
+        '''
+
+        session = self.client.session
+        session['cart'] = {'5': 1}
+        session.save()
+
+        response = self.client.get('/commerce/cart/')
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'form')
+        self.assertContains(response, 'error list', count=1)
+        self.assertContains(response, 'Cart is empty.', count=1)
+
+        cart = self.client.session['cart']
+        self.assertEqual(cart, {})
 
 class TestViews(TestCase):
     def setUp(self):
@@ -643,280 +1005,7 @@ class TestViews(TestCase):
         site.name = 'CompMart'
         site.save()
 
-    ### Delete Product Tests ###
-
     ### Cart Tests ###
-    def test_cart(self):
-        '''
-        Test cart view with cart using GET.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'1': 3, '5': 2}
-        session.save()
-
-        response = self.client.get('/commerce/cart/')
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'form')
-        self.assertContains(response, 'value="3"', count=1)
-        self.assertContains(response, 'value="2"', count=1)
-
-    def test_cart_empty_get(self):
-        '''
-        Test cart view with empty cart using GET.
-        '''
-
-        response = self.client.get('/commerce/cart/')
-        self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, 'form')
-        self.assertContains(response, 'Cart is empty.', count=1)
-
-    def test_cart_empty_post_checkout(self):
-        '''
-        Test cart view with empty cart using POST data
-        submitted through checkout button.
-        '''
-
-        response = self.client.post(
-            '/commerce/cart/',
-            {'1': 3, 'five': 'two', 'checkout': 'Checkout'},
-        )
-        self.assertEqual(response.status_code, 200)
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart, {})
-
-        self.assertContains(response, 'Cart is empty.', count=1)
-
-    def test_cart_empty_post_update(self):
-        '''
-        Test cart view with empty cart using POST data
-        submitted through update button.
-        '''
-
-        response = self.client.post('/commerce/cart/', {'1': 3, 'five': 'two'})
-        self.assertEqual(response.status_code, 200)
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart, {})
-
-        self.assertContains(response, 'Cart is empty.', count=1)
-
-    def test_cart_post_checkout_no_update(self):
-        '''
-        Test cart view with cart using no POST data
-        submitted through checkout button.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'1': 3, '5': 2}
-        session.save()
-
-        response = self.client.post('/commerce/cart/', {'checkout': 'Checkout'})
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/commerce/checkout/')
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart['1'], 3)
-        self.assertEqual(cart['5'], 2)
-
-    def test_cart_post_checkout_with_update(self):
-        '''
-        Test cart view with cart using POST data
-        submitted through checkout button.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'1': 3, '5': 2}
-        session.save()
-
-        response = self.client.post(
-            '/commerce/cart/',
-            {'1': 2, 'checkout': 'Checkout'},
-        )
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/commerce/checkout/')
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart['1'], 2)
-        self.assertEqual(cart['5'], 2)
-
-    def test_cart_post_checkout_with_invalid_update(self):
-        '''
-        Test cart view with cart using invalid POST data
-        submitted through checkout button.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'1': 3, '5': 2}
-        session.save()
-
-        response = self.client.post(
-            '/commerce/cart/',
-            {'1': 2, 'five': 'three', 'checkout': 'Checkout'},
-        )
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/commerce/checkout/')
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart['1'], 2)
-        self.assertEqual(cart['5'], 2)
-
-    def test_cart_post_update_no_update(self):
-        '''
-        Test cart view with cart using no POST data
-        submitted through update button.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'1': 3, '5': 2}
-        session.save()
-
-        response = self.client.post('/commerce/cart/')
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'value="3"', count=1)
-        self.assertContains(response, 'value="2"', count=1)
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart['1'], 3)
-        self.assertEqual(cart['5'], 2)
-
-    def test_cart_post_update_with_update(self):
-        '''
-        Test cart view with cart using POST data
-        submitted through update button.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'1': 3, '5': 2}
-        session.save()
-
-        response = self.client.post(
-            '/commerce/cart/',
-            {'1': 2},
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'value="2"', count=2)
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart['1'], 2)
-        self.assertEqual(cart['5'], 2)
-
-    def test_cart_post_update_with_invalid_update(self):
-        '''
-        Test cart view with cart using invalid POST data
-        submitted through update button.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'1': 3, '5': 2}
-        session.save()
-
-        response = self.client.post(
-            '/commerce/cart/',
-            {'1': 2, 'five': 'three'},
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'form')
-        self.assertContains(response, 'value="2"', count=2)
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart['1'], 2)
-        self.assertEqual(cart['5'], 2)
-
-    def test_cart_post_update_with_over_stock_update(self):
-        '''
-        Test cart view with cart using POST data that goes over stock limit
-        submitted through update button.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'2': 1}
-        session.save()
-
-        response = self.client.post('/commerce/cart/', {'2': 4})
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'form')
-        self.assertContains(response, 'value="3"', count=1)
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart['2'], 3)
-
-    def test_cart_post_checkout_with_over_stock_update(self):
-        '''
-        Test cart view with cart using POST data that goes over stock limit
-        submitted through checkout button.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'2': 1}
-        session.save()
-
-        response = self.client.post(
-            '/commerce/cart/',
-            {'2': 4, 'checkout': 'Checkout'},
-        )
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/commerce/checkout/')
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart['2'], 3)
-
-    def test_cart_get_with_invalid_cart(self):
-        '''
-        Test cart view with invalid cart using GET.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'3': 1, '15': 1}
-        session.save()
-
-        response = self.client.get('/commerce/cart/')
-        self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, 'form')
-        self.assertContains(response, 'error list', count=1)
-        self.assertContains(response, 'Cart is empty.', count=1)
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart, {})
-
-    def test_cart_post_update_with_invalid_cart(self):
-        '''
-        Test cart view with invalid cart using no POST data
-        submitted through update button.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'3': 1, '15': 1}
-        session.save()
-
-        response = self.client.post('/commerce/cart/')
-        self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, 'form')
-        self.assertContains(response, 'error list', count=1)
-        self.assertContains(response, 'Cart is empty.', count=1)
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart, {})
-
-    def test_cart_post_checkout_with_invalid_cart(self):
-        '''
-        Test cart view with invalid cart using no POST data
-        submitted through checkout button.
-        '''
-
-        session = self.client.session
-        session['cart'] = {'3': 1, '15': 1}
-        session.save()
-
-        response = self.client.post('/commerce/cart/', {'checkout': 'Checkout'})
-        self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, 'form')
-        self.assertContains(response, 'error list', count=1)
-        self.assertContains(response, 'Cart is empty.', count=1)
-
-        cart = self.client.session['cart']
-        self.assertEqual(cart, {})
 
     ### Checkout Tests ###
     def test_checkout_no_login_no_cart_no_address_no_card(self):

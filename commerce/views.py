@@ -10,11 +10,10 @@ from .forms import ProductSearchForm, CheckoutForm
 from .models import Product, OrderItem, Order
 from . import get_cart
 
-def get_products(session):
-    cart = get_cart(session)
+def get_products(cart):
     products = {}
     errors = []
-    for pk in sorted(cart):
+    for pk in cart:
         try:
             products[pk] = Product.active_objects.get(pk=pk)
         except Product.DoesNotExist:
@@ -85,7 +84,7 @@ def add_product(request, pk):
     try:
         product = Product.active_objects.get(pk=pk)
     except Product.DoesNotExist:
-        pass
+        raise Http404()
     else:
         cart = get_cart(request.session)
         stock = product.stock
@@ -101,13 +100,15 @@ def delete_product(request, pk):
     cart = get_cart(request.session)
     if pk in cart:
         del cart[pk]
+    else:
+        raise Http404()
 
     url = request.GET.get('next', reverse('index'))
     return redirect(url)
 
 def cart(request):
-    products, errors = get_products(request.session)
     cart = get_cart(request.session)
+    products, errors = get_products(cart)
     if request.method == 'POST' and not errors:
         post = request.POST.copy()
         if 'checkout' in post:
