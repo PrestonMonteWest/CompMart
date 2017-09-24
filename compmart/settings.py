@@ -95,11 +95,14 @@ WSGI_APPLICATION = 'compmart.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'pmwest$compmart',
-        'USER': 'pmwest',
-        'PASSWORD': 'asdf12340987',
-        'HOST': 'pmwest.mysql.pythonanywhere-services.com',
+        'NAME': 'sql3196149',
+        'USER': 'sql3196149',
+        'PASSWORD': 'u7mmHTuLJz',
+        'HOST': 'sql3.freemysqlhosting.net',
         'PORT': '3306',
+        'OPTIONS': {
+            'sql_mode': 'traditional',
+        },
     },
 }
 
