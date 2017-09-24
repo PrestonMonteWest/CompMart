@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
-import os
+import os, json
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -92,20 +92,9 @@ WSGI_APPLICATION = 'compmart.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sql3196149',
-        'USER': 'sql3196149',
-        'PASSWORD': 'u7mmHTuLJz',
-        'HOST': 'sql3.freemysqlhosting.net',
-        'PORT': '3306',
-        'OPTIONS': {
-            'sql_mode': 'traditional',
-        },
-    },
-}
-
+# load database conf from JSON file
+with open(os.path.join(BASE_DIR, 'database.json')) as f:
+    DATABASE = json.loads(f.read())
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
