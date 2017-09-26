@@ -20,7 +20,7 @@ class Product(models.Model):
         through='Review',
         related_name='reviewed_products'
     )
-    name = models.CharField(max_length=40)
+    name = models.CharField(max_length=200)
     price = models.DecimalField(max_digits=6, decimal_places=2)
     description = models.TextField(max_length=1000, blank=True)
     discontinued = models.BooleanField(default=False)

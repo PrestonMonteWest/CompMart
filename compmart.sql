@@ -1,8 +1,8 @@
 -- MySQL dump 10.13  Distrib 5.7.19, for Linux (x86_64)
 --
--- Host: sql3.freemysqlhosting.net    Database: sql3196149
+-- Host: localhost    Database: compmart
 -- ------------------------------------------------------
--- Server version	5.5.49-0ubuntu0.12.04.1
+-- Server version	5.7.19-0ubuntu0.16.04.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -174,7 +174,7 @@ CREATE TABLE `auth_user` (
   `date_joined` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -183,6 +183,7 @@ CREATE TABLE `auth_user` (
 
 LOCK TABLES `auth_user` WRITE;
 /*!40000 ALTER TABLE `auth_user` DISABLE KEYS */;
+INSERT INTO `auth_user` VALUES (1,'argon2$argon2i$v=19$m=512,t=2,p=2$MVcxeFlaTDQ2MXJD$XW+ECcKWOfjj3UkVa6zECg','2017-09-26 03:41:11',1,'preston','','','prestonmontewest@gmail.com',1,1,'2017-09-26 03:41:02');
 /*!40000 ALTER TABLE `auth_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -262,8 +263,8 @@ CREATE TABLE `commerce_order` (
   PRIMARY KEY (`id`),
   KEY `commerce_order_card_id_5c85892b_fk_account_creditcard_id` (`card_id`),
   KEY `commerce_order_user_id_3f7ff6c0_fk_auth_user_id` (`user_id`),
-  CONSTRAINT `commerce_order_user_id_3f7ff6c0_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`),
-  CONSTRAINT `commerce_order_card_id_5c85892b_fk_account_creditcard_id` FOREIGN KEY (`card_id`) REFERENCES `account_creditcard` (`id`)
+  CONSTRAINT `commerce_order_card_id_5c85892b_fk_account_creditcard_id` FOREIGN KEY (`card_id`) REFERENCES `account_creditcard` (`id`),
+  CONSTRAINT `commerce_order_user_id_3f7ff6c0_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -292,8 +293,8 @@ CREATE TABLE `commerce_orderitem` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `commerce_orderitem_order_id_product_id_80761716_uniq` (`order_id`,`product_id`),
   KEY `commerce_orderitem_product_id_eeb6e678_fk_commerce_product_id` (`product_id`),
-  CONSTRAINT `commerce_orderitem_product_id_eeb6e678_fk_commerce_product_id` FOREIGN KEY (`product_id`) REFERENCES `commerce_product` (`id`),
-  CONSTRAINT `commerce_orderitem_order_id_c812b8bd_fk_commerce_order_id` FOREIGN KEY (`order_id`) REFERENCES `commerce_order` (`id`)
+  CONSTRAINT `commerce_orderitem_order_id_c812b8bd_fk_commerce_order_id` FOREIGN KEY (`order_id`) REFERENCES `commerce_order` (`id`),
+  CONSTRAINT `commerce_orderitem_product_id_eeb6e678_fk_commerce_product_id` FOREIGN KEY (`product_id`) REFERENCES `commerce_product` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -315,7 +316,7 @@ DROP TABLE IF EXISTS `commerce_product`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `commerce_product` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(40) NOT NULL,
+  `name` varchar(200) NOT NULL,
   `price` decimal(6,2) NOT NULL,
   `description` longtext NOT NULL,
   `discontinued` tinyint(1) NOT NULL,
@@ -352,8 +353,8 @@ CREATE TABLE `commerce_review` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `commerce_review_product_id_user_id_838823bc_uniq` (`product_id`,`user_id`),
   KEY `commerce_review_user_id_4461d886_fk_auth_user_id` (`user_id`),
-  CONSTRAINT `commerce_review_user_id_4461d886_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`),
-  CONSTRAINT `commerce_review_product_id_94c12bd0_fk_commerce_product_id` FOREIGN KEY (`product_id`) REFERENCES `commerce_product` (`id`)
+  CONSTRAINT `commerce_review_product_id_94c12bd0_fk_commerce_product_id` FOREIGN KEY (`product_id`) REFERENCES `commerce_product` (`id`),
+  CONSTRAINT `commerce_review_user_id_4461d886_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -385,9 +386,9 @@ CREATE TABLE `django_admin_log` (
   PRIMARY KEY (`id`),
   KEY `django_admin_log_content_type_id_c4bce8eb_fk_django_co` (`content_type_id`),
   KEY `django_admin_log_user_id_c564eba6_fk_auth_user_id` (`user_id`),
-  CONSTRAINT `django_admin_log_user_id_c564eba6_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`),
-  CONSTRAINT `django_admin_log_content_type_id_c4bce8eb_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  CONSTRAINT `django_admin_log_content_type_id_c4bce8eb_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`),
+  CONSTRAINT `django_admin_log_user_id_c564eba6_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -396,6 +397,7 @@ CREATE TABLE `django_admin_log` (
 
 LOCK TABLES `django_admin_log` WRITE;
 /*!40000 ALTER TABLE `django_admin_log` DISABLE KEYS */;
+INSERT INTO `django_admin_log` VALUES (1,'2017-09-26 03:42:19','2','pmwest.pythonanywhere.com',2,'[{\"changed\": {\"fields\": [\"domain\", \"name\"]}}]',7,1);
 /*!40000 ALTER TABLE `django_admin_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -438,7 +440,7 @@ CREATE TABLE `django_migrations` (
   `name` varchar(255) NOT NULL,
   `applied` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -447,7 +449,7 @@ CREATE TABLE `django_migrations` (
 
 LOCK TABLES `django_migrations` WRITE;
 /*!40000 ALTER TABLE `django_migrations` DISABLE KEYS */;
-INSERT INTO `django_migrations` VALUES (1,'contenttypes','0001_initial','2017-09-24 22:25:53'),(2,'auth','0001_initial','2017-09-24 22:26:11'),(3,'account','0001_initial','2017-09-24 22:26:19'),(4,'admin','0001_initial','2017-09-24 22:26:25'),(5,'admin','0002_logentry_remove_auto_add','2017-09-24 22:26:25'),(6,'contenttypes','0002_remove_content_type_name','2017-09-24 22:26:26'),(7,'auth','0002_alter_permission_name_max_length','2017-09-24 22:26:26'),(8,'auth','0003_alter_user_email_max_length','2017-09-24 22:26:27'),(9,'auth','0004_alter_user_username_opts','2017-09-24 22:26:27'),(10,'auth','0005_alter_user_last_login_null','2017-09-24 22:26:28'),(11,'auth','0006_require_contenttypes_0002','2017-09-24 22:26:28'),(12,'auth','0007_alter_validators_add_error_messages','2017-09-24 22:26:28'),(13,'auth','0008_alter_user_username_max_length','2017-09-24 22:26:29'),(14,'commerce','0001_initial','2017-09-24 22:26:47'),(15,'sessions','0001_initial','2017-09-24 22:26:50'),(16,'sites','0001_initial','2017-09-24 22:26:52'),(17,'sites','0002_alter_domain_unique','2017-09-24 22:26:52');
+INSERT INTO `django_migrations` VALUES (1,'contenttypes','0001_initial','2017-09-24 22:25:53'),(2,'auth','0001_initial','2017-09-24 22:26:11'),(3,'account','0001_initial','2017-09-24 22:26:19'),(4,'admin','0001_initial','2017-09-24 22:26:25'),(5,'admin','0002_logentry_remove_auto_add','2017-09-24 22:26:25'),(6,'contenttypes','0002_remove_content_type_name','2017-09-24 22:26:26'),(7,'auth','0002_alter_permission_name_max_length','2017-09-24 22:26:26'),(8,'auth','0003_alter_user_email_max_length','2017-09-24 22:26:27'),(9,'auth','0004_alter_user_username_opts','2017-09-24 22:26:27'),(10,'auth','0005_alter_user_last_login_null','2017-09-24 22:26:28'),(11,'auth','0006_require_contenttypes_0002','2017-09-24 22:26:28'),(12,'auth','0007_alter_validators_add_error_messages','2017-09-24 22:26:28'),(13,'auth','0008_alter_user_username_max_length','2017-09-24 22:26:29'),(14,'commerce','0001_initial','2017-09-24 22:26:47'),(15,'sessions','0001_initial','2017-09-24 22:26:50'),(16,'sites','0001_initial','2017-09-24 22:26:52'),(17,'sites','0002_alter_domain_unique','2017-09-24 22:26:52'),(18,'commerce','0002_auto_20170925_2200','2017-09-26 03:36:43'),(19,'commerce','0003_auto_20170925_2204','2017-09-26 03:36:43');
 /*!40000 ALTER TABLE `django_migrations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -473,6 +475,7 @@ CREATE TABLE `django_session` (
 
 LOCK TABLES `django_session` WRITE;
 /*!40000 ALTER TABLE `django_session` DISABLE KEYS */;
+INSERT INTO `django_session` VALUES ('5c5xawgxdpawhbu3st9nd5ahxul5ib6r','MzYxNjE2N2Q3ZWYxZjhlYTJhMmI1NzcyYjViOWFmZjVlODk5NzljNjp7Il9hdXRoX3VzZXJfYmFja2VuZCI6ImRqYW5nby5jb250cmliLmF1dGguYmFja2VuZHMuTW9kZWxCYWNrZW5kIiwiX2F1dGhfdXNlcl9pZCI6IjEiLCJfYXV0aF91c2VyX2hhc2giOiJjOWU2YzFlNWJkNzhmN2QyN2Q1NDdlNWFhNGNmMDllMWJhNmY3ZjQ3In0=','2017-10-10 03:42:19');
 /*!40000 ALTER TABLE `django_session` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -498,7 +501,7 @@ CREATE TABLE `django_site` (
 
 LOCK TABLES `django_site` WRITE;
 /*!40000 ALTER TABLE `django_site` DISABLE KEYS */;
-INSERT INTO `django_site` VALUES (2,'example.com','example.com');
+INSERT INTO `django_site` VALUES (2,'pmwest.pythonanywhere.com','CompMart');
 /*!40000 ALTER TABLE `django_site` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -511,4 +514,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-09-24 19:21:17
+-- Dump completed on 2017-09-25 22:49:06
