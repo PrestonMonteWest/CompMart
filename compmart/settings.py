@@ -94,7 +94,8 @@ WSGI_APPLICATION = 'compmart.wsgi.application'
 
 # load database conf from JSON file
 with open(os.path.join(BASE_DIR, 'database.json')) as f:
-    DATABASE = json.loads(f.read())
+    DATABASES = json.loads(f.read())
+
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
