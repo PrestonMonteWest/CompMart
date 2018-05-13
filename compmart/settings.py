@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
-import os, json
+import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,7 +25,7 @@ SITE_ID = 2
 
 ADMINS = [('prestonmontewest', 'prestonmontewest@gmail.com')]
 
-INTERNAL_IPS = ['127.0.0.1']
+INTERNAL_IPS = ['192.168.0.16', '127.0.0.1']
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -34,9 +34,9 @@ INTERNAL_IPS = ['127.0.0.1']
 SECRET_KEY = '2b(oj0a@jefbsm^qlfi-y9j6%yv3da_(r#=xxsyi0!c&xpowo='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['prestonmontewest.com', '127.0.0.1', '192.168.0.16', '70.121.59.127']
 
 
 # Application definition
@@ -92,9 +92,16 @@ WSGI_APPLICATION = 'compmart.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
-# load database conf from JSON file
-with open(os.path.join(BASE_DIR, 'database.json')) as f:
-    DATABASES = json.loads(f.read())
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'compmart',
+        'USER': 'compmartuser',
+        'PASSWORD': '247Pw918!2157',
+        'HOST': 'localhost',
+        'PORT': '',
+    },
+}
 
 
 # Password validation
@@ -145,9 +152,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+if DEBUG:
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, 'static'),
+    ]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
