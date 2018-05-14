@@ -34,7 +34,7 @@ INTERNAL_IPS = ['192.168.0.16', '127.0.0.1']
 SECRET_KEY = '2b(oj0a@jefbsm^qlfi-y9j6%yv3da_(r#=xxsyi0!c&xpowo='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
