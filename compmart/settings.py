@@ -34,7 +34,7 @@ INTERNAL_IPS = ['192.168.0.16', '127.0.0.1']
 SECRET_KEY = '2b(oj0a@jefbsm^qlfi-y9j6%yv3da_(r#=xxsyi0!c&xpowo='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -94,12 +94,8 @@ WSGI_APPLICATION = 'compmart.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'compmart',
-        'USER': 'compmartuser',
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
-        'PORT': '',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'compmart.db'),
     },
 }
 
@@ -155,9 +151,8 @@ if DEBUG:
     STATICFILES_DIRS = [
         os.path.join(BASE_DIR, 'static'),
     ]
-else:
-    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
