@@ -1,5 +1,8 @@
 # CompMart
-An example e-commerce website (still in development)
+An example e-commerce website that I've been slowly building upon. This is my biggest personal project at the time of writing.
+
+## Installing
+You'll need the below python packages to have a working instance of this project. A virtual environment is recommended.
 
 Dependencies:
 * argon2 0.1.10
@@ -12,3 +15,9 @@ Dependencies:
 * Production:
   * psycopg2 2.6.2
 * requests 2.18.4
+
+To install:
+```
+pip install [list of required python packages]
+```
+If you don't have pip installed, follow these instructions: https://pip.pypa.io/en/stable/installing/
