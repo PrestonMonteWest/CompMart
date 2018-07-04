@@ -16,6 +16,8 @@ Dependencies:
   * psycopg2 2.6.2
 * requests 2.18.4
 
+Later versions may be and often are backwards compatible with older versions, but I make no guarantee of this. If something isn't working, consider installing the above versions explicitly.
+
 To install:
 ```
 pip install [list of required python packages]
