@@ -10,6 +10,9 @@ from . import forms
 from .models import Address, CreditCard
 from . import login_required
 
+import logging
+
+
 # used in logout view for redirection to 'index'
 password_change.login_required = True
 
@@ -56,14 +59,22 @@ def index(request):
 
     return render(request, 'account/index.html', {'links': links})
 
+
 def logout(request):
     from django.contrib.auth import logout as auth_logout
     from commerce import get_cart
-
+    
     cart = get_cart(request.session)
     auth_logout(request)
     request.session['cart'] = cart
-    url = request.GET.get('next', reverse('index'))
+    url = request.GET.get('next', None)
+
+    if url is None:
+        logger.warning('Query parameter "next" was not set!')
+        url = reverse('index')
+
+    logger = logging.getLogger(__name__)
+    logger.debug('url={0}'.format(url))
 
     view = resolve(url).func
     if getattr(view, 'login_required', False):
@@ -71,10 +82,12 @@ def logout(request):
 
     return redirect(url)
 
+
 class Register(generic.CreateView):
     template_name = 'account/register.html'
     form_class = forms.MyUserCreationForm
     success_url = reverse_lazy('index')
+
 
 @login_required
 def add_address(request):
