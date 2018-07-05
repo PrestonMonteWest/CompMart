@@ -1,0 +1,33 @@
+/* input fields */
+
+input:not([type="submit"]):not([type="radio"]) {width: 100%;}
+
+input:not([type="submit"]):not([type="radio"]):focus {box-shadow: 0 0 0 1px grey;}
+
+/* input fields end */
+/* classes */
+
+.form {
+    box-sizing: border-box;
+    width: 400px;
+    padding: 0 10px;
+    border: 1px solid #ccc;
+    margin: 20px auto;
+}
+
+.form div {margin: 20px 0;}
+
+.form div:not(:last-child) {text-align: left;}
+
+.form label {
+    display: block;
+    padding-bottom: 5px;
+}
+
+.form ul {
+    margin: 0;
+}
+
+.form ul label {padding-bottom: 0;}
+
+/* classes end */

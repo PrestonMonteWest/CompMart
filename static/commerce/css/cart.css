@@ -1,0 +1,21 @@
+.cart {
+    width: 500px;
+    margin: 20px auto;
+}
+
+.cart > table {width: 100%;}
+
+.cart td {border-top: 1px solid #ccc;}
+
+.cart input[type="number"] {
+    box-sizing: border-box;
+    width: 60px;
+}
+
+.cart > p {
+    display: inline-block;
+    border: 1px solid #ccc;
+    padding: 10px 20px;
+}
+
+.cart > div > input {margin: 0 10px;}
