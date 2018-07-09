@@ -67,17 +67,13 @@ def logout(request):
     cart = get_cart(request.session)
     auth_logout(request)
     request.session['cart'] = cart
-    url = request.GET.get('next', None)
+
+    name = 'next'
+    url = request.GET.get(name, None)
 
     if url is None:
-        logger.warning('Query parameter "next" was not set!')
-        url = reverse('index')
-
-    logger = logging.getLogger(__name__)
-    logger.debug('url={0}'.format(url))
-
-    view = resolve(url).func
-    if getattr(view, 'login_required', False):
+        logger = logging.getLogger(__name__)
+        logger.warning('Query parameter "{}" was not set!'.format(name))
         url = reverse('index')
 
     return redirect(url)

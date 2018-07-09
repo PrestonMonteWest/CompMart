@@ -151,7 +151,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['django-file'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
+            'level': 'INFO',
             'propagate': True,
         },
         'account.views': {
