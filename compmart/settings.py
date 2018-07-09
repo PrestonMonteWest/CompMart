@@ -119,6 +119,55 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# Logging
+# https://docs.djangoproject.com/en/2.0/topics/logging
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'brief': {
+            'format': '%(levelname)s; %(message)s',
+        },
+        'introspect': {
+            'format': '[%(asctime)s; %(filename)s-%(funcName)s():%(lineno)s; %(levelname)s] %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+    'handlers': {
+        'django-file': {
+            'level': 'DEBUG',
+            'formatter': 'brief',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'django-debug.log'),
+        },
+        'user-file': {
+            'level': 'DEBUG',
+            'formatter': 'introspect',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'user-debug.log'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['django-file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'account.views': {
+            'handlers': ['user-file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': True,
+        },
+        'commerce.views': {
+            'handlers': ['user-file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': True,
+        },
+    },
+}
+
+
 # Password hashing
 # https://docs.djangoproject.com/en/1.10/ref/settings/#password-hashers
 
