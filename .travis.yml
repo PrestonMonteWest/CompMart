@@ -4,4 +4,4 @@ python:
 install:
   - pip install -r stable-req.txt
 script:
-  - manage.py test
+  - python manage.py test
