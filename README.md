@@ -21,3 +21,8 @@ To install:
 pip install -r stable-req.txt
 ```
 If you don't have pip installed, follow these instructions: https://pip.pypa.io/en/stable/installing/
+
+You'll need to create a directory in the project called logs, like so:
+```
+mkdir logs
+```
