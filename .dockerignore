@@ -1,0 +1,13 @@
+# Ignore files
+.dockerignore
+.gitignore
+
+Dockerfile
+LICENSE
+README.md
+.travis.yml
+
+# Directories
+static/
+logs/
+.git/

@@ -1,0 +1,9 @@
+argon2-cffi>=18.3,<19.0
+cffi>=1.12,<2.0
+cryptography>=2.7,<3.0
+Django>=2.2,<3.0
+gunicorn
+Pillow>=3.4,<4.0
+psycopg2>=2.8,<3.0
+psycopg2-binary>=2.8,<3.0
+requests>=2.22,<3.0
