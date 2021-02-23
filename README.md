@@ -13,7 +13,7 @@ Dependencies:
 * Development:
   * sqlite3
 * Production:
-  * psycopg2 2.6.2
+  * psycopg2 2.6.2 (requires libpq-dev for Debian and libpq-devel for CentOS)
 * requests 2.18.4
 
 To install:
