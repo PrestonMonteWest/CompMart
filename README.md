@@ -16,12 +16,6 @@ Dependencies:
   * psycopg2 2.6.2 (requires libpq-dev for Debian and libpq-devel for CentOS)
 * requests 2.18.4
 
-To install:
-```
-pip install -r requirements.txt
-```
-If you don't have pip installed, follow these instructions: https://pip.pypa.io/en/stable/installing/
-
 You'll need to create a directory in the project called logs, like so:
 ```
 mkdir logs
