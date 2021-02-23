@@ -49,13 +49,13 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(
         r'^login/$',
-        views.login,
+        views.LoginView.as_view(template_name='account/login.html'),
         {'template_name': 'account/login.html'},
         name='login'
     ),
     url(
         r'^password_change/$',
-        views.password_change,
+        views.PasswordChangeView.as_view(),
         {
             'template_name': 'account/password_change.html',
             'post_change_redirect': 'account:password_change_done',
@@ -65,7 +65,7 @@ urlpatterns = [
     ),
     url(
         r'^password_change_done/$',
-        views.password_change,
+        views.PasswordChangeView.as_view(),
         {
             'template_name': 'account/password_change.html',
             'post_change_redirect': 'account:password_change_done',

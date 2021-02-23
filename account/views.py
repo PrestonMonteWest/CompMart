@@ -2,7 +2,7 @@ from django.shortcuts import reverse, redirect, render
 from django.utils.decorators import method_decorator
 from django.urls import resolve, reverse_lazy
 from django.http import Http404
-from django.contrib.auth.views import password_change, login
+from django.contrib.auth.views import PasswordChangeView, LoginView
 from django.views import generic
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
@@ -14,7 +14,7 @@ import logging
 
 
 # used in logout view for redirection to 'index'
-password_change.login_required = True
+PasswordChangeView.as_view().login_required = True
 
 @login_required
 def index(request):
@@ -63,7 +63,7 @@ def index(request):
 def logout(request):
     from django.contrib.auth import logout as auth_logout
     from commerce import get_cart
-    
+
     cart = get_cart(request.session)
     auth_logout(request)
     request.session['cart'] = cart
