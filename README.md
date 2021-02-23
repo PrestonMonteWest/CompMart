@@ -18,7 +18,7 @@ Dependencies:
 
 To install:
 ```
-pip install -r stable-req.txt
+pip install -r requirements.txt
 ```
 If you don't have pip installed, follow these instructions: https://pip.pypa.io/en/stable/installing/
 

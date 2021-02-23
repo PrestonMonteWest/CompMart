@@ -4,7 +4,6 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.forms.widgets import Widget, Select
-from django.utils import six
 from django.utils.dates import MONTHS
 from django.utils.safestring import mark_safe
 from .models import Address, CreditCard
@@ -36,7 +35,7 @@ class MonthYearWidget(Widget):
             year_val, month_val = value.year, value.month
         except AttributeError:
             year_val = month_val = None
-            if isinstance(value, six.string_types):
+            if isinstance(value, str):
                 match = date_re.match(value)
                 if match:
                     year_val, month_val, day_val = [int(v) for v in match.groups()]
